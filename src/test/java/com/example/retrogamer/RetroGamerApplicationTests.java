@@ -1,0 +1,13 @@
+package com.example.retrogamer;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class RetroGamerApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
