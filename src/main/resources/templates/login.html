@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetroGamer Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        .retro-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        body {
+            background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/fs/9bc27292880429.5e569ff84e4d0.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .overlay {
+            background: rgba(0, 0, 0, 0.75);
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="overlay"></div>
+<div class="relative w-full max-w-md bg-gray-800 text-white rounded-lg shadow-lg px-6 py-8 z-10">
+    <h1 class="text-3xl retro-font text-center text-pink-500 mb-6">RetroGamer</h1>
+    <p class="text-center text-gray-400 mb-8">Sign in to enter the pixel world!</p>
+
+
+    <form th:action="@{/login}" method="post">
+        <div class="mb-4">
+            <label for="email" class="block text-sm mb-2">Email Address</label>
+            <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    th:value="*{user.email}"
+                    class="w-full bg-gray-700 border border-gray-600 text-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    placeholder="you@example.com"
+                    required
+            />
+        </div>
+
+        <div class="mb-6">
+            <label for="password" class="block text-sm mb-2">Password</label>
+            <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    th:value="*{user.password}"
+                    class="w-full bg-gray-700 border border-gray-600 text-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    placeholder="********"
+                    required
+            />
+        </div>
+
+        <button
+                type="submit"
+                class="w-full bg-pink-500 text-black font-bold rounded-md px-4 py-2 transition transform hover:scale-105"
+        >
+            Log In
+        </button>
+    </form>
+
+
+
+    <div class="mt-6 text-center">
+        <p class="text-gray-400 text-sm">
+            Don't have an account?
+            <a href="#" class="text-pink-500 hover:underline">Sign up</a>
+        </p>
+        <p class="text-gray-400 text-sm mt-2">
+            Forgot password?
+            <a href="#" class="text-pink-500 hover:underline">Reset it</a>
+        </p>
+    </div>
+
+
+    <div class="text-center mt-8">
+        <p class="text-xs text-gray-600">© 2024 RetroGamer Forum. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
