@@ -15,6 +15,7 @@ public class ProfileController {
 
 
 
+    @Autowired
     public ProfileController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
