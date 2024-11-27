@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <!-- Include Vue.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    <profile-page></profile-page>
+</div>
+
+<script>
+    // Define Vue Component
+    Vue.component('profile-page', {
+        data() {
+            return {
+                userIdInput: '', // Store the user ID entered by the user
+                user: null, // Store the fetched user data
+                error: null, // Store any errors
+                userIdFromUrl: null, // Store the user ID extracted from the URL
+            };
+        },
+        created() {
+            // Check if there's a userId in the URL (this will be set from the route params)
+            const pathParts = window.location.pathname.split('/');
+
+            // If a userId exists in the URL, store it
+            if (pathParts.length > 2) {
+                this.userIdFromUrl = pathParts[2]; // Extract the userId from the URL
+                this.fetchUser(this.userIdFromUrl); // Fetch user data immediately
+            }
+        },
+        methods: {
+            async fetchUser(userId) {
+                try {
+                    // Fetch the user data from the backend API
+                    const response = await fetch(`/api/users/${userId}`);
+                    if (response.ok) {
+                        this.user = await response.json();
+                        this.error = null; // Clear error if user is found
+                    } else {
+                        this.error = "User not found.";
+                        this.user = null; // Clear user data if not found
+                    }
+                } catch (error) {
+                    this.error = "An error occurred while fetching user data.";
+                    console.error(error);
+                }
+            },
+            redirectToProfile() {
+                // Ensure the input field contains a valid user ID
+                if (this.userIdInput) {
+                    // Redirect to the profile page for the entered user ID
+                    window.location.href = `/profile/${this.userIdInput}`;
+                } else {
+                    alert("Please enter a valid User ID.");
+                }
+            }
+        },
+        template: `
+                <div>
+                    <h1>User Profile</h1>
+
+                    <div v-if="error" style="color: red;">
+                        <p>{{ error }}</p>
+                    </div>
+
+                    <div v-if="user">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Bio:</strong> {{ user.bio }}</p>
+                        <p><strong>Profile Picture:</strong> <img :src="user.profilePicture" alt="Profile Picture" width="100"></p>
+                    </div>
+
+                    <div v-else v-if="!userIdFromUrl">
+                        <p>Please enter a User ID:</p>
+                        <input v-model="userIdInput" type="number" placeholder="Enter User ID" />
+                        <button @click="redirectToProfile">Go to Profile</button>
+                    </div>
+                </div>
+            `
+    });
+
+    // Create a new Vue instance
+    new Vue({
+        el: '#app',
+    });
+</script>
+</body>
+</html>
