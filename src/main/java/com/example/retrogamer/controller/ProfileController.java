@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping ("/api/users/")
 public class ProfileController {
@@ -16,16 +18,6 @@ public class ProfileController {
     public ProfileController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-/*
-    @GetMapping ("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable Long userId) {
-        return userRepository.findByUserId(userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-
-    }
-
- */
 
     @GetMapping ("/{userId}")
     public User getUserById(@PathVariable Long userId) {
@@ -34,11 +26,10 @@ public class ProfileController {
 
 
     @GetMapping ("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        return userRepository.findByUsername(username)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public User getUserByUsername(@PathVariable String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
+
     @PostMapping ("/update/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User user) {
         return userRepository.findByUserId(userId)
@@ -53,11 +44,11 @@ public class ProfileController {
                 .orElse(ResponseEntity.notFound().build());
     }
     @PostMapping ("/delete/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<User> deleteUser(@PathVariable Long userId) {
         return userRepository.findByUserId(userId)
                 .map(user -> {
                     userRepository.delete(user);
-                    return ResponseEntity.ok().build();
+                    return ResponseEntity.ok(user);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

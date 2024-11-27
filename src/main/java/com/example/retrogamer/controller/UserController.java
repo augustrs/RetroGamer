@@ -27,7 +27,7 @@ public class UserController {
 
     @PostMapping("/login")
     public String loginPost(@RequestParam String email, @RequestParam String password, HttpSession session, Model model) {
-        User user = userRepository.findByEmail(email);
+        User user  = userRepository.findByEmail(email);
 
         if (user != null && user.getPassword().equals(password)) {
             session.setAttribute("user", user);
