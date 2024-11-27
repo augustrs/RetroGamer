@@ -18,6 +18,7 @@
             return {
                 userIdInput: '', // Store the user ID entered by the user
                 user: null, // Store the fetched user data
+                profilePicture: null, // Store the fetched profile picture
                 error: null, // Store any errors
                 userIdFromUrl: null, // Store the user ID extracted from the URL
             };
@@ -30,6 +31,7 @@
             if (pathParts.length > 2) {
                 this.userIdFromUrl = pathParts[2]; // Extract the userId from the URL
                 this.fetchUser(this.userIdFromUrl); // Fetch user data immediately
+                this.fetchProfilePicture(this.userIdFromUrl); // Fetch profile picture
             }
         },
         methods: {
@@ -49,6 +51,26 @@
                     console.error(error);
                 }
             },
+            async fetchProfilePicture(userId) {
+                try {
+                    // Fetch the profile picture from the backend API
+                    const response = await fetch(`/api/users/${userId}/profile-picture`);
+                    if (response.ok) {
+                        // Convert the binary image data to Base64
+                        const imageBlob = await response.blob();
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            this.profilePicture = reader.result; // Set Base64 image data
+                        };
+                        reader.readAsDataURL(imageBlob);
+                    } else {
+                        this.profilePicture = null; // If not found, no profile picture
+                    }
+                } catch (error) {
+                    this.error = "An error occurred while fetching the profile picture.";
+                    console.error(error);
+                }
+            },
             redirectToProfile() {
                 // Ensure the input field contains a valid user ID
                 if (this.userIdInput) {
@@ -60,27 +82,31 @@
             }
         },
         template: `
-                <div>
-                    <h1>User Profile</h1>
+            <div>
+                <h1>User Profile</h1>
 
-                    <div v-if="error" style="color: red;">
-                        <p>{{ error }}</p>
-                    </div>
+                <div v-if="error" style="color: red;">
+                    <p>{{ error }}</p>
+                </div>
 
-                    <div v-if="user">
-                        <p><strong>Username:</strong> {{ user.username }}</p>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>Bio:</strong> {{ user.bio }}</p>
-                        <p><strong>Profile Picture:</strong> <img :src="user.profilePicture" alt="Profile Picture" width="100"></p>
-                    </div>
+                <div v-if="user">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Bio:</strong> {{ user.bio }}</p>
 
-                    <div v-else v-if="!userIdFromUrl">
-                        <p>Please enter a User ID:</p>
-                        <input v-model="userIdInput" type="number" placeholder="Enter User ID" />
-                        <button @click="redirectToProfile">Go to Profile</button>
+                    <div v-if="profilePicture">
+                        <p><strong>Profile Picture:</strong></p>
+                        <img :src="profilePicture" alt="Profile Picture" width="100">
                     </div>
                 </div>
-            `
+
+                <div v-else v-if="!userIdFromUrl">
+                    <p>Please enter a User ID:</p>
+                    <input v-model="userIdInput" type="number" placeholder="Enter User ID" />
+                    <button @click="redirectToProfile">Go to Profile</button>
+                </div>
+            </div>
+        `
     });
 
     // Create a new Vue instance

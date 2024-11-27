@@ -17,4 +17,9 @@ public class ProfilePageController {
     public String profileWithId() {
         return "user";
     }
+
+    @GetMapping("/create")
+    public String createProfile() {
+        return "createuser";
+    }
 }

@@ -5,6 +5,7 @@ import com.example.retrogamer.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -58,6 +59,50 @@ public class ProfileController {
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return ResponseEntity.ok(userRepository.save(user));
     }
+
+    @PostMapping("/{userId}/upload-profile-picture")
+    public ResponseEntity<String> uploadProfilePicture(@PathVariable Long userId, @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("File is empty");
+        }
+        if (!file.getContentType().startsWith("image/")) {
+            return ResponseEntity.badRequest().body("File is not an image");
+        }
+        return userRepository.findByUserId(userId)
+                .map(user -> {
+                    try {
+                        byte[] imageBytes = file.getBytes();
+                        user.setProfilePicture(imageBytes);
+                        userRepository.save(user);
+                        return ResponseEntity.ok("File uploaded successfully");
+
+                    } catch (Exception e) {
+                        return ResponseEntity.badRequest().body("Failed to read file");
+                    }
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+    @GetMapping("/{userId}/profile-picture")
+    public ResponseEntity<byte[]> getProfilePicture(@PathVariable Long userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] imageBytes = userOptional.get().getProfilePicture();
+        if (imageBytes == null || imageBytes.length == 0) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/jpeg")
+                .body(imageBytes);
+    }
+
+
+
+
 
 
 }

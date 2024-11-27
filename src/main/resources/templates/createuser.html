@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Picture Upload</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <h1>Upload Profile Picture</h1>
+    <form @submit.prevent="uploadProfilePicture">
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" v-model="userId" required />
+
+        <label for="file">Select File:</label>
+        <input type="file" id="file" @change="onFileChange" required />
+
+        <button :disabled="!file || !userId">Upload</button>
+    </form>
+
+    <div v-if="message">
+        <p>{{ message }}</p>
+    </div>
+</div>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                userId: '', // User ID entered by the user
+                file: null, // File selected by the user
+                message: '', // Success or error message
+            };
+        },
+        methods: {
+            // Handle file selection
+            onFileChange(event) {
+                this.file = event.target.files[0];
+            },
+
+            // Upload the profile picture
+            async uploadProfilePicture() {
+                if (!this.file || !this.userId) {
+                    this.message = 'User ID and file are required.';
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', this.file);
+
+                try {
+                    const response = await axios.post(
+                        `/api/users/${this.userId}/upload-profile-picture`,
+                        formData,
+                        {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        }
+                    );
+                    this.message = response.data;
+                } catch (error) {
+                    this.message =
+                        error.response?.data || 'An error occurred during the upload.';
+                }
+            },
+        },
+    });
+
+    app.mount('#app');
+</script>
+</body>
+</html>
+
+
