@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/comment")
 public class CommentController {
@@ -22,8 +24,8 @@ public class CommentController {
     }
 
     @GetMapping("/{postId}")
-    public ForumComment getCommentByPostId(@PathVariable Long postId) {
-        return forumCommentRepository.findByPost_PostId(postId).orElse(null);
+    public List<ForumComment> getCommentByPostId(@PathVariable Long postId) {
+        return forumCommentRepository.findByPost_PostId(postId);
     }
 
     @PostMapping ("/delete/{commentId}")

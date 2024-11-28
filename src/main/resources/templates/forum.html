@@ -12,6 +12,7 @@
 <div id="app" class="p-8">
     <h1 class="text-3xl font-bold mb-4">Forum Posts</h1>
 
+    <!-- Display selected post -->
     <div v-if="selectedPost">
         <button @click="goBack" class="bg-gray-500 text-white px-4 py-2 rounded mb-4">
             Back to Posts
@@ -29,8 +30,37 @@
             in {{ selectedPost.category.name }}
             on {{ formatDate(selectedPost.createdAt) }}
         </p>
+
+        <!-- Comments Section -->
+        <div v-if="selectedPost.comments && selectedPost.comments.length > 0" class="mt-6">
+            <h3 class="text-xl font-bold">Comments</h3>
+            <div v-for="comment in selectedPost.comments" :key="comment.commentId" class="border-t pt-4 mt-4">
+                <p class="text-sm text-gray-600">{{ comment.content }}</p>
+                <!-- Display the username of the commenter -->
+                <p class="text-xs text-gray-500">
+                    Commented by {{ comment.user.username }} on {{ formatDate(comment.createdAt) }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Comment Form -->
+        <div class="mt-6">
+            <h3 class="text-xl font-bold">Add a Comment</h3>
+            <form @submit.prevent="submitComment">
+                <textarea
+                        v-model="newCommentContent"
+                        class="border border-gray-300 p-2 w-full rounded mb-4"
+                        placeholder="Write your comment..."
+                        required
+                ></textarea>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Submit Comment
+                </button>
+            </form>
+        </div>
     </div>
 
+    <!-- Display all posts -->
     <div v-else>
         <input
                 type="text"
@@ -96,7 +126,8 @@
                 categories: [],
                 searchQuery: '',
                 selectedCategory: '',
-                selectedPost: null
+                selectedPost: null,
+                newCommentContent: ''
             };
         },
         computed: {
@@ -137,16 +168,51 @@
                     console.error('Failed to fetch categories:', error);
                 }
             },
-            async viewPost(postId) {
+            async fetchPostWithComments(postId) {
                 try {
-                    const response = await axios.get(`/api/forum/post/${postId}`);
-                    this.selectedPost = response.data;
+                    // Fetch the post details
+                    const postResponse = await axios.get(`/api/forum/post/${postId}`);
+                    this.selectedPost = postResponse.data;
+
+                    // Fetch the comments for this post
+                    const commentsResponse = await axios.get(`/api/comment/${postId}`);
+                    // Ensure each comment has the user information
+                    this.selectedPost.comments = commentsResponse.data.map(comment => {
+                        return {
+                            ...comment,
+                            user: comment.user // Make sure the user is included in the comment object
+                        };
+                    });
                 } catch (error) {
-                    console.error('Failed to load post:', error);
+                    console.error('Failed to load post and comments:', error);
                 }
+            },
+            async viewPost(postId) {
+                this.fetchPostWithComments(postId);
             },
             goBack() {
                 this.selectedPost = null;
+            },
+            async submitComment() {
+                if (this.newCommentContent.trim() === '') return;
+
+                const newComment = {
+                    content: this.newCommentContent,
+                    user: { userId: 1 },  // Replace with the actual logged-in user ID if needed
+                    post: { postId: this.selectedPost.postId }
+                };
+
+                try {
+                    const response = await axios.post('/api/comment/create', newComment);
+                    // Add the comment to the list of comments directly, including the user information
+                    this.selectedPost.comments.push({
+                        ...response.data,
+                        user: { username: "CurrentUser" }  // Manually add the logged-in user's name for this example
+                    });
+                    this.newCommentContent = ''; // Clear the textarea after submission
+                } catch (error) {
+                    console.error('Failed to submit comment:', error);
+                }
             },
             formatDate(dateString) {
                 if (!dateString) return '';
