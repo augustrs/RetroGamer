@@ -21,5 +21,4 @@ public class ForumLike {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // Getters and setters
 }

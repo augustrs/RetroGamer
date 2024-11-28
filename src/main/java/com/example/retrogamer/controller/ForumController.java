@@ -75,4 +75,14 @@ public class ForumController {
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(post.getImage());
     }
+
+    @GetMapping("/post/{id}")
+    public ResponseEntity<?> getPostById(@PathVariable Long id) {
+        ForumPost post = forumPostRepository.findById(id).orElse(null);
+        if (post == null) {
+            return ResponseEntity.status(404).body("Post not found.");
+        }
+        return ResponseEntity.ok(post);
+    }
+
 }
