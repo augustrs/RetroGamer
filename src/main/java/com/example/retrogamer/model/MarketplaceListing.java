@@ -8,7 +8,7 @@ public class MarketplaceListing {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer listingId;
+    private Long listingId;
 
     @Column(nullable = false)
     private String title;

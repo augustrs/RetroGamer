@@ -22,4 +22,9 @@ public class ProfilePageController {
     public String createProfile() {
         return "createuser";
     }
+
+    @GetMapping("/upload-pfp")
+    public String uploadPfp() {
+        return "upload";
+    }
 }

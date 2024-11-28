@@ -10,6 +10,7 @@ public class ForumPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;
 
+
     @Column(nullable = false)
     private String title;
 

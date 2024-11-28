@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Profile Picture</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <h1>Upload Profile Picture</h1>
+
+    <div>
+        <label for="userId">User ID:</label>
+        <input type="text" v-model="userId" placeholder="Enter User ID" />
+    </div>
+
+    <div>
+        <label for="file">Profile Picture:</label>
+        <input type="file" @change="handleFileUpload" />
+    </div>
+
+    <button @click="uploadProfilePicture">Upload</button>
+
+    <div v-if="message" :style="{ color: success ? 'green' : 'red' }">
+        {{ message }}
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                userId: '',
+                file: null,
+                message: '',
+                success: false,
+            };
+        },
+        methods: {
+            handleFileUpload(event) {
+                this.file = event.target.files[0];
+            },
+            async uploadProfilePicture() {
+                if (!this.userId) {
+                    this.message = 'User ID is required!';
+                    this.success = false;
+                    return;
+                }
+                if (!this.file) {
+                    this.message = 'Please select a file!';
+                    this.success = false;
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('file', this.file);
+
+                try {
+                    const response = await axios.post(`/api/users/${this.userId}/upload-profile-picture`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    });
+                    this.message = response.data;
+                    this.success = true;
+                } catch (error) {
+                    this.message = error.response?.data || 'Failed to upload the file.';
+                    this.success = false;
+                }
+            },
+        },
+    }).mount('#app');
+</script>
+</body>
+</html>
