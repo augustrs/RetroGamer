@@ -12,59 +12,80 @@
 <div id="app" class="p-8">
     <h1 class="text-3xl font-bold mb-4">Forum Posts</h1>
 
-    <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="Search posts..."
-            class="border border-gray-300 rounded-md p-2 mb-4 w-full"
-    />
-
-    <div class="mb-4">
-        <label class="block font-medium mb-2">Filter by Category:</label>
-        <select v-model="selectedCategory" class="border border-gray-300 rounded-md p-2">
-            <option value="">All</option>
-            <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
-                {{ category.name }}
-            </option>
-        </select>
+    <div v-if="selectedPost">
+        <button @click="goBack" class="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+            Back to Posts
+        </button>
+        <h2 class="text-2xl font-bold mb-2">{{ selectedPost.title }}</h2>
+        <p class="text-gray-600 mb-4">{{ selectedPost.content }}</p>
+        <img
+                v-if="selectedPost.image"
+                :src="`/api/forum/post/${selectedPost.postId}/image`"
+                class="max-w-full h-auto rounded mb-4"
+                alt="Post Image"
+        />
+        <p class="text-sm text-gray-500">
+            Posted by {{ selectedPost.user.username }}
+            in {{ selectedPost.category.name }}
+            on {{ formatDate(selectedPost.createdAt) }}
+        </p>
     </div>
 
-    <div class="mb-4">
-        <a href="/forum/createPost" class="bg-green-500 text-white px-4 py-2 rounded inline-block">
-            Create New Post
-        </a>
-    </div>
+    <div v-else>
+        <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search posts..."
+                class="border border-gray-300 rounded-md p-2 mb-4 w-full"
+        />
 
-    <div v-if="posts.length > 0" class="space-y-4">
-        <div v-for="post in filteredPosts" :key="post.postId" class="border border-gray-300 rounded-md p-4">
-            <h2 class="text-xl font-bold">{{ post.title }}</h2>
-            <p class="text-gray-600">{{ post.content.slice(0, 100) }}...</p>
+        <div class="mb-4">
+            <label class="block font-medium mb-2">Filter by Category:</label>
+            <select v-model="selectedCategory" class="border border-gray-300 rounded-md p-2">
+                <option value="">All</option>
+                <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
+                    {{ category.name }}
+                </option>
+            </select>
+        </div>
 
-            <img
-                    v-if="post.image != null"
-                    :src="`/api/forum/post/${post.postId}/image`"
-                    class="max-w-md h-auto my-2 rounded"
-                    alt="Post image"
-                    @error="handleImageError"
-            />
+        <div class="mb-4">
+            <a href="/forum/createPost" class="bg-green-500 text-white px-4 py-2 rounded inline-block">
+                Create New Post
+            </a>
+        </div>
 
-            <p class="text-sm text-gray-500 mt-2">
-                Posted by {{ post.user.username }}
-                in {{ post.category.name }}
-                on {{ formatDate(post.createdAt) }}
-            </p>
+        <div v-if="posts.length > 0" class="space-y-4">
+            <div v-for="post in filteredPosts" :key="post.postId" class="border border-gray-300 rounded-md p-4">
+                <h2 class="text-xl font-bold">{{ post.title }}</h2>
+                <p class="text-gray-600">{{ post.content.slice(0, 100) }}...</p>
 
-            <div class="mt-3">
-                <button
-                        @click="viewPost(post.postId)"
-                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                >
-                    View Post
-                </button>
+                <img
+                        v-if="post.image != null"
+                        :src="`/api/forum/post/${post.postId}/image`"
+                        class="max-w-md h-auto my-2 rounded"
+                        alt="Post image"
+                        @error="handleImageError"
+                />
+
+                <p class="text-sm text-gray-500 mt-2">
+                    Posted by {{ post.user.username }}
+                    in {{ post.category.name }}
+                    on {{ formatDate(post.createdAt) }}
+                </p>
+
+                <div class="mt-3">
+                    <button
+                            @click="viewPost(post.postId)"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    >
+                        View Post
+                    </button>
+                </div>
             </div>
         </div>
+        <p v-else class="text-gray-500">No posts found.</p>
     </div>
-    <p v-else class="text-gray-500">No posts found.</p>
 </div>
 
 <script>
@@ -74,7 +95,8 @@
                 posts: [],
                 categories: [],
                 searchQuery: '',
-                selectedCategory: ''
+                selectedCategory: '',
+                selectedPost: null
             };
         },
         computed: {
@@ -103,7 +125,6 @@
                 try {
                     const response = await axios.get('/api/forum/posts');
                     this.posts = response.data;
-                    console.log('Fetched posts:', this.posts);
                 } catch (error) {
                     console.error('Failed to fetch posts:', error);
                 }
@@ -112,17 +133,20 @@
                 try {
                     const response = await axios.get('/api/forum/categories');
                     this.categories = response.data;
-                    console.log('Fetched categories:', this.categories);
                 } catch (error) {
                     console.error('Failed to fetch categories:', error);
                 }
             },
-            handleImageError(event) {
-                console.error('Failed to load image:', event);
-                event.target.style.display = 'none';
+            async viewPost(postId) {
+                try {
+                    const response = await axios.get(`/api/forum/post/${postId}`);
+                    this.selectedPost = response.data;
+                } catch (error) {
+                    console.error('Failed to load post:', error);
+                }
             },
-            viewPost(postId) {
-                window.location.href = `/forum/post/${postId}`;
+            goBack() {
+                this.selectedPost = null;
             },
             formatDate(dateString) {
                 if (!dateString) return '';
@@ -134,10 +158,13 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
+            },
+            handleImageError(event) {
+                console.error('Failed to load image:', event);
+                event.target.style.display = 'none';
             }
         },
         mounted() {
-            console.log('Component mounted');
             this.fetchPosts();
             this.fetchCategories();
         }
