@@ -12,7 +12,6 @@ public class CommentController {
 
     private final ForumCommentRepository forumCommentRepository;
 
-    @Autowired
     public CommentController(ForumCommentRepository forumCommentRepository) {
         this.forumCommentRepository = forumCommentRepository;
     }
