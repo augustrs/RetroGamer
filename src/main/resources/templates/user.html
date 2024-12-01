@@ -1,50 +1,177 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
-    <!-- Include Vue.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        .retro-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        body {
+            background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/fs/9bc27292880429.5e569ff84e4d0.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 16px; /* Removed pink border */
+            padding: 20px;
+            box-shadow: 0 0 20px #ff00ff;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header .avatar {
+            margin: 0 auto 10px;
+            width: 100px;
+            height: 100px;
+            background-color: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px #ff00ff; /* Retained pink glow */
+        }
+
+        .header h1 {
+            font-size: 18px;
+            margin: 0;
+            color: #ffffff;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+
+        .bio {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #ffddff;
+            padding: 10px;
+            background: #222;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .form {
+            margin-top: 20px;
+        }
+
+        .form textarea {
+            width: 96%;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #444; /* Neutral border */
+            color: #ffddff;
+            border-radius: 8px;
+            resize: none;
+            font-size: 12px;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 0 10px #444;
+        }
+
+        .form button {
+            margin-top: 10px;
+            background: #ff00ff;
+            border: none;
+            padding: 10px 20px;
+            color: #ffffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #ff00ff;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form button:hover {
+            background: #ff33ff;
+            box-shadow: 0 0 15px #ff33ff;
+        }
+
+        .input-section input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            background: #222;
+            border: 1px solid #444; /* Neutral border */
+            color: #ffddff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Press Start 2P', cursive;
+            box-shadow: 0 0 10px #444; /* Subtle glow */
+            margin-top: 10px;
+        }
+
+        .input-section button {
+            margin-top: 10px;
+            background: #ff00ff;
+            border: none;
+            padding: 10px;
+            color: white;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        .input-section button:hover {
+            background: #ff33ff;
+            box-shadow: 0 0 15px #ff33ff;
+        }
+    </style>
 </head>
 <body>
-<div id="app">
+<div id="app" class="container">
     <profile-page></profile-page>
 </div>
 
 <script>
-    // Define Vue Component
     Vue.component('profile-page', {
         data() {
             return {
-                userIdInput: '', // Store the user ID entered by the user
-                user: null, // Store the fetched user data
-                profilePicture: null, // Store the fetched profile picture
-                error: null, // Store any errors
-                userIdFromUrl: null, // Store the user ID extracted from the URL
+                userIdInput: '',
+                user: null,
+                profilePicture: null,
+                error: null,
+                userIdFromUrl: null,
+                newBio: '',
+                bioUpdateMessage: null,
+                showTextArea: false,
             };
         },
         created() {
-            // Check if there's a userId in the URL (this will be set from the route params)
             const pathParts = window.location.pathname.split('/');
-
-            // If a userId exists in the URL, store it
             if (pathParts.length > 2) {
-                this.userIdFromUrl = pathParts[2]; // Extract the userId from the URL
-                this.fetchUser(this.userIdFromUrl); // Fetch user data immediately
-                this.fetchProfilePicture(this.userIdFromUrl); // Fetch profile picture
+                this.userIdFromUrl = pathParts[2];
+                this.fetchUser(this.userIdFromUrl);
+                this.fetchProfilePicture(this.userIdFromUrl);
             }
         },
         methods: {
             async fetchUser(userId) {
                 try {
-                    // Fetch the user data from the backend API
                     const response = await fetch(`/api/users/${userId}`);
                     if (response.ok) {
                         this.user = await response.json();
-                        this.error = null; // Clear error if user is found
+                        this.newBio = this.user.bio;
+                        this.error = null;
                     } else {
                         this.error = "User not found.";
-                        this.user = null; // Clear user data if not found
+                        this.user = null;
                     }
                 } catch (error) {
                     this.error = "An error occurred while fetching user data.";
@@ -53,63 +180,107 @@
             },
             async fetchProfilePicture(userId) {
                 try {
-                    // Fetch the profile picture from the backend API
                     const response = await fetch(`/api/users/${userId}/profile-picture`);
                     if (response.ok) {
-                        // Convert the binary image data to Base64
                         const imageBlob = await response.blob();
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                            this.profilePicture = reader.result; // Set Base64 image data
+                            this.profilePicture = reader.result;
                         };
                         reader.readAsDataURL(imageBlob);
                     } else {
-                        this.profilePicture = null; // If not found, no profile picture
+                        this.profilePicture = null;
                     }
                 } catch (error) {
                     this.error = "An error occurred while fetching the profile picture.";
                     console.error(error);
                 }
             },
+            async updateProfile() {
+                if (!this.newBio.trim()) {
+                    alert("Bio cannot be empty.");
+                    return;
+                }
+                try {
+                    const response = await fetch(`/api/users/${this.userIdFromUrl}/update-bio`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(this.newBio),
+                    });
+
+                    if (response.ok) {
+                        const updatedUser = await response.json();
+                        this.user.bio = updatedUser.bio;
+                        this.bioUpdateMessage = "Profile updated successfully!";
+                        this.showTextArea = false; // Hide the textarea after successful update
+                        setTimeout(() => {
+                            this.bioUpdateMessage = null;
+                        }, 2000);
+                    } else {
+                        this.bioUpdateMessage = "Failed to update profile.";
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.bioUpdateMessage = "An error occurred while updating the profile.";
+                }
+            },
+            toggleTextArea() {
+                this.showTextArea = !this.showTextArea;
+            },
             redirectToProfile() {
-                // Ensure the input field contains a valid user ID
-                if (this.userIdInput) {
-                    // Redirect to the profile page for the entered user ID
-                    window.location.href = `/profile/${this.userIdInput}`;
+                const userId = this.userIdFromUrl || this.userIdInput;
+                if (userId) {
+                    window.location.href = `/profile/${userId}`;
                 } else {
                     alert("Please enter a valid User ID.");
                 }
-            }
+            },
         },
+
+
         template: `
-            <div>
-                <h1>User Profile</h1>
-
-                <div v-if="error" style="color: red;">
-                    <p>{{ error }}</p>
-                </div>
-
-                <div v-if="user">
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Bio:</strong> {{ user.bio }}</p>
-
-                    <div v-if="profilePicture">
-                        <p><strong>Profile Picture:</strong></p>
-                        <img :src="profilePicture" alt="Profile Picture" width="100">
-                    </div>
-                </div>
-
-                <div v-else v-if="!userIdFromUrl">
-                    <p>Please enter a User ID:</p>
-                    <input v-model="userIdInput" type="number" placeholder="Enter User ID" />
-                    <button @click="redirectToProfile">Go to Profile</button>
-                </div>
+          <div>
+            <div v-if="error" class="error">
+              <p>{{ error }}</p>
             </div>
-        `
+
+            <div v-if="user">
+              <div class="header">
+                <div class="avatar">
+                  <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture">
+                  <span v-else>{{ user.username.charAt(0).toUpperCase() }}</span>
+                </div>
+                <h1>{{ user.username }}</h1>
+              </div>
+
+              <div class="bio">
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Bio:</strong> {{ user.bio }}</p>
+              </div>
+
+              <div class="form">
+                <button v-if="!showTextArea" @click="toggleTextArea">Edit Bio</button>
+                <div v-else>
+                  <textarea v-model="newBio" rows="4" placeholder="Update your bio here"></textarea>
+                  <button @click="updateProfile">Save Bio</button>
+                  <button @click="toggleTextArea">Cancel</button>
+                </div>
+                <p v-if="bioUpdateMessage">{{ bioUpdateMessage }}</p>
+              </div>
+            </div>
+
+            <div v-else v-if="!userIdFromUrl" class="input-section">
+              <h1 class="retro-font text-center text-pink-500">User Profile</h1>
+              <p>Please enter a User ID:</p>
+              <input v-model="userIdInput" type="number" placeholder="Enter User ID">
+              <button @click="redirectToProfile">Go to Profile</button>
+            </div>
+          </div>
+        `,
     });
 
-    // Create a new Vue instance
     new Vue({
         el: '#app',
     });
