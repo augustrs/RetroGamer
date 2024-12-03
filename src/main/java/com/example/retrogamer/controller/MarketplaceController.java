@@ -1,22 +1,18 @@
 package com.example.retrogamer.controller;
 
-import com.example.retrogamer.model.Category;
-import com.example.retrogamer.model.MarketplaceListing;
-import com.example.retrogamer.model.MarketplaceOffer;
-import com.example.retrogamer.model.User;
+import com.example.retrogamer.model.*;
 import com.example.retrogamer.repository.CategoryRepository;
 import com.example.retrogamer.repository.MarketplaceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-
-public class MarketPlaceController {
 
     @RestController
     @RequestMapping("/api/marketplace")
@@ -71,6 +67,19 @@ public class MarketPlaceController {
             return ResponseEntity.ok("Listing created.");
         }
 
+        @GetMapping("/post/{id}/image")
+        public ResponseEntity<?> getListingImage(@PathVariable Long id) {
+            MarketplaceListing listing = marketplaceRepository.findById(id).orElse(null);
+            if (listing == null || listing.getImage() == null) {
+                return ResponseEntity.status(404).body("Image not found.");
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(listing.getImage());
+        }
+
+
+
         @PostMapping("/delete")
         public ResponseEntity<?> deleteListing(
                 @RequestParam Long id,
@@ -93,4 +102,3 @@ public class MarketPlaceController {
             return ResponseEntity.ok("Listing deleted.");
         }
     }
-}
