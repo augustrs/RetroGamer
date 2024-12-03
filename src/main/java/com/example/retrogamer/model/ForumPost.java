@@ -17,6 +17,9 @@ public class ForumPost {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     @Lob
     private byte[] image;
 
@@ -85,5 +88,12 @@ public class ForumPost {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public int getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
     }
 }

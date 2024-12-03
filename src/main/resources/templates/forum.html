@@ -7,6 +7,60 @@
     <script src="https://unpkg.com/vue@3"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .like-button {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .like-button:hover {
+            transform: scale(1.1);
+        }
+
+        .like-button.not-liked {
+            color: grey;
+            background-color: rgba(128, 128, 128, 0.1);
+        }
+
+        .like-button.liked {
+            color: limegreen;
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+
+        .like-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .like-count {
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+        }
+
+        .like-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .like-animation {
+            animation: likeEffect 0.4s ease;
+        }
+
+        @keyframes likeEffect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
 </head>
 <body>
 <div id="app" class="p-8">
@@ -24,6 +78,7 @@
                 :src="`/api/forum/post/${selectedPost.postId}/image`"
                 class="max-w-full h-auto rounded mb-4"
                 alt="Post Image"
+                @error="handleImageError"
         />
         <p class="text-sm text-gray-500">
             Posted by {{ selectedPost.user.username }}
@@ -31,12 +86,30 @@
             on {{ formatDate(selectedPost.createdAt) }}
         </p>
 
+        <!-- Like Section for Selected Post -->
+        <div class="like-wrapper mt-4">
+            <button
+                    @click="likePost(selectedPost.postId)"
+                    :disabled="isLiking"
+                    class="like-button text-2xl"
+                    :class="{
+                    'liked': isPostLiked(selectedPost.postId),
+                    'not-liked': !isPostLiked(selectedPost.postId),
+                    'like-animation': isLiking
+                }"
+            >
+                <i class="fas fa-thumbs-up"></i>
+            </button>
+            <span class="like-count">
+                {{ selectedPost.likeCount ?? 0 }}
+                {{ selectedPost.likeCount === 1 ? 'Like' : 'Likes' }}
+            </span>
+        </div>
         <!-- Comments Section -->
         <div v-if="selectedPost.comments && selectedPost.comments.length > 0" class="mt-6">
             <h3 class="text-xl font-bold">Comments</h3>
             <div v-for="comment in selectedPost.comments" :key="comment.commentId" class="border-t pt-4 mt-4">
                 <p class="text-sm text-gray-600">{{ comment.content }}</p>
-                <!-- Display the username of the commenter -->
                 <p class="text-xs text-gray-500">
                     Commented by {{ comment.user.username }} on {{ formatDate(comment.createdAt) }}
                 </p>
@@ -91,7 +164,7 @@
                 <p class="text-gray-600">{{ post.content.slice(0, 100) }}...</p>
 
                 <img
-                        v-if="post.image != null"
+                        v-if="post.image"
                         :src="`/api/forum/post/${post.postId}/image`"
                         class="max-w-md h-auto my-2 rounded"
                         alt="Post image"
@@ -103,6 +176,26 @@
                     in {{ post.category.name }}
                     on {{ formatDate(post.createdAt) }}
                 </p>
+
+                <!-- Like Section for Post List -->
+                <div class="like-wrapper mt-2">
+                    <button
+                            @click="likePost(post.postId)"
+                            :disabled="isLiking"
+                            class="like-button text-2xl"
+                            :class="{
+                            'liked': isPostLiked(post.postId),
+                            'not-liked': !isPostLiked(post.postId),
+                            'like-animation': isLiking
+                        }"
+                    >
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <span class="like-count">
+                        {{ post.likeCount ?? 0 }}
+                        {{ post.likeCount === 1 ? 'Like' : 'Likes' }}
+                    </span>
+                </div>
 
                 <div class="mt-3">
                     <button
@@ -117,7 +210,6 @@
         <p v-else class="text-gray-500">No posts found.</p>
     </div>
 </div>
-
 <script>
     const app = Vue.createApp({
         data() {
@@ -128,13 +220,15 @@
                 selectedCategory: '',
                 selectedPost: null,
                 newCommentContent: '',
-                currentUser: null
+                currentUser: null,
+                isLiking: false,
+                pollInterval: null,
+                userLikes: new Set()
             };
         },
         computed: {
             filteredPosts() {
                 let filtered = this.posts;
-
                 if (this.searchQuery) {
                     const query = this.searchQuery.toLowerCase();
                     filtered = filtered.filter(post =>
@@ -142,17 +236,56 @@
                         post.content.toLowerCase().includes(query)
                     );
                 }
-
                 if (this.selectedCategory) {
                     filtered = filtered.filter(post =>
                         post.category.categoryId === this.selectedCategory
                     );
                 }
-
                 return filtered;
             }
         },
         methods: {
+            startPolling() {
+                this.pollInterval = setInterval(() => {
+                    this.updateLikeCounts();
+                    if (this.selectedPost) {
+                        this.updateSelectedPostLikeCount();
+                    }
+                }, 10000); // 10 seconds
+            },
+
+            stopPolling() {
+                if (this.pollInterval) {
+                    clearInterval(this.pollInterval);
+                }
+            },
+
+            async updateLikeCounts() {
+                try {
+                    // Keep the current userLikes state and only update post counts
+                    const postsResponse = await axios.get('/api/forum/posts');
+                    this.posts = this.posts.map(post => {
+                        const updatedPost = postsResponse.data.find(p => p.postId === post.postId);
+                        return updatedPost ? { ...post, likeCount: updatedPost.likeCount } : post;
+                    });
+                } catch (error) {
+                    console.error('Failed to update like counts:', error);
+                }
+            },
+
+            async updateSelectedPostLikeCount() {
+                if (!this.selectedPost) return;
+                try {
+                    const response = await axios.get(`/api/forum/post/${this.selectedPost.postId}`);
+                    this.selectedPost = {
+                        ...this.selectedPost,
+                        likeCount: response.data.likeCount
+                    };
+                } catch (error) {
+                    console.error('Failed to update selected post like count:', error);
+                }
+            },
+
             async fetchCurrentUser() {
                 try {
                     const response = await axios.get('/api/users/current');
@@ -161,14 +294,25 @@
                     console.error('Failed to fetch current user:', error);
                 }
             },
+
+            async fetchUserLikes() {
+                try {
+                    const response = await axios.get('/api/forum/user-likes');
+                    this.userLikes = new Set(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch user likes:', error);
+                }
+            },
+
             async fetchPosts() {
                 try {
-                    const response = await axios.get('/api/forum/posts');
-                    this.posts = response.data;
+                    const postsResponse = await axios.get('/api/forum/posts');
+                    this.posts = postsResponse.data;
                 } catch (error) {
                     console.error('Failed to fetch posts:', error);
                 }
             },
+
             async fetchCategories() {
                 try {
                     const response = await axios.get('/api/forum/categories');
@@ -177,58 +321,90 @@
                     console.error('Failed to fetch categories:', error);
                 }
             },
+
             async fetchPostWithComments(postId) {
                 try {
-                    // Fetch the post details
-                    const postResponse = await axios.get(`/api/forum/post/${postId}`);
-                    this.selectedPost = postResponse.data;
-
-                    // Fetch the comments for this post
-                    const commentsResponse = await axios.get(`/api/comment/${postId}`);
-                    // Ensure each comment has the user information
-                    this.selectedPost.comments = commentsResponse.data.map(comment => {
-                        return {
-                            ...comment,
-                            user: comment.user // Make sure the user is included in the comment object
-                        };
-                    });
+                    const [postResponse, commentsResponse] = await Promise.all([
+                        axios.get(`/api/forum/post/${postId}`),
+                        axios.get(`/api/comment/${postId}`)
+                    ]);
+                    this.selectedPost = {
+                        ...postResponse.data,
+                        comments: commentsResponse.data
+                    };
                 } catch (error) {
                     console.error('Failed to load post and comments:', error);
                 }
             },
-            async viewPost(postId) {
-                this.fetchPostWithComments(postId);
-            },
-            goBack() {
-                this.selectedPost = null;
-            },
-            async submitComment() {
-                if (this.newCommentContent.trim() === '') return;
 
-                if (!this.currentUser) {
-                    console.error('No user is logged in');
-                    return;
-                }
-
-                const newComment = {
-                    content: this.newCommentContent,
-                    user: { userId: this.currentUser.userId },  // Replace with the actual logged-in user ID if needed
-                    post: { postId: this.selectedPost.postId }
-                };
+            async likePost(postId) {
+                if (this.isLiking) return;
+                this.isLiking = true;
 
                 try {
-                    const response = await axios.post('/api/comment/create', newComment);
+                    const response = await axios.post(`/api/forum/post/${postId}/like`);
+                    const { likeCount, isLiked } = response.data;
 
-                    // Add the comment to the list of comments directly, including the user information
-                    this.selectedPost.comments.push({
-                        ...response.data,
-                        user: { username: this.currentUser.username } // Manually add the logged-in user's name for this example
-                    });
-                    this.newCommentContent = ''; // Clear the textarea after submission
+                    // Update like state
+                    if (isLiked) {
+                        this.userLikes.add(postId);
+                    } else {
+                        this.userLikes.delete(postId);
+                    }
+
+                    // Update posts array
+                    this.posts = this.posts.map(post =>
+                        post.postId === postId ? { ...post, likeCount } : post
+                    );
+
+                    // Update selected post if it exists
+                    if (this.selectedPost && this.selectedPost.postId === postId) {
+                        this.selectedPost = { ...this.selectedPost, likeCount };
+                    }
+
+                    // Immediately after liking, fetch the latest user likes
+                    await this.fetchUserLikes();
+
                 } catch (error) {
-                    console.error('Failed to submit comment:', error);
+                    console.error('Failed to like post:', error);
+                    if (error.response?.status === 401) {
+                        alert('Please log in to like posts');
+                    }
+                } finally {
+                    this.isLiking = false;
                 }
             },
+
+            isPostLiked(postId) {
+                return this.userLikes.has(postId);
+            },
+
+            async viewPost(postId) {
+                await this.fetchPostWithComments(postId);
+            },
+
+            goBack() {
+                this.selectedPost = null;
+                this.fetchPosts();
+            },
+
+            async submitComment() {
+                if (!this.newCommentContent.trim()) return;
+
+                try {
+                    const response = await axios.post('/api/comment/create', {
+                        content: this.newCommentContent,
+                        postId: this.selectedPost.postId
+                    });
+
+                    this.selectedPost.comments.push(response.data);
+                    this.newCommentContent = '';
+                } catch (error) {
+                    console.error('Failed to submit comment:', error);
+                    alert('Failed to submit comment. Please try again.');
+                }
+            },
+
             formatDate(dateString) {
                 if (!dateString) return '';
                 const date = new Date(dateString);
@@ -240,19 +416,29 @@
                     minute: '2-digit'
                 });
             },
+
             handleImageError(event) {
                 console.error('Failed to load image:', event);
                 event.target.style.display = 'none';
             }
         },
         mounted() {
-            this.fetchPosts();
-            this.fetchCategories();
-            this.fetchCurrentUser();
+            Promise.all([
+                this.fetchPosts(),
+                this.fetchCategories(),
+                this.fetchCurrentUser(),
+                this.fetchUserLikes()
+            ]).then(() => {
+                this.startPolling();
+            });
+        },
+        beforeUnmount() {
+            this.stopPolling();
         }
     });
 
     app.mount('#app');
 </script>
+
 </body>
 </html>
