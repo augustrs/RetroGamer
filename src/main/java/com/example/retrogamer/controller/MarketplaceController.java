@@ -2,6 +2,7 @@ package com.example.retrogamer.controller;
 
 import com.example.retrogamer.model.*;
 import com.example.retrogamer.repository.CategoryRepository;
+import com.example.retrogamer.repository.MarketplaceCommentRepository;
 import com.example.retrogamer.repository.MarketplaceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -20,10 +21,12 @@ import java.util.List;
 
         private MarketplaceRepository marketplaceRepository;
         private CategoryRepository categoryRepository;
+        private MarketplaceCommentRepository commentRepository;
 
-        public MarketplaceController(MarketplaceRepository marketplaceRepository, CategoryRepository categoryRepository) {
+        public MarketplaceController(MarketplaceRepository marketplaceRepository, CategoryRepository categoryRepository, MarketplaceCommentRepository commentRepository) {
             this.marketplaceRepository = marketplaceRepository;
             this.categoryRepository = categoryRepository;
+            this.commentRepository = commentRepository;
         }
 
         @GetMapping("/listings")
@@ -105,8 +108,13 @@ import java.util.List;
                 return ResponseEntity.status(403).body("User does not own this listing.");
             }
 
+            List<MarketplaceComment> commentsToDelete = commentRepository.findByListing_ListingId(id);
+            for (MarketplaceComment comment : commentsToDelete) {
+                commentRepository.delete(comment);
+            }
+
             marketplaceRepository.delete(listing);
-            return ResponseEntity.ok("Listing deleted.");
+            return ResponseEntity.ok("Listing and all associated comments deleted.");
         }
 
     }
