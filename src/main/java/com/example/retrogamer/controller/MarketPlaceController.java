@@ -1,13 +1,19 @@
 package com.example.retrogamer.controller;
 
+import com.example.retrogamer.model.Category;
 import com.example.retrogamer.model.MarketplaceListing;
 import com.example.retrogamer.model.MarketplaceOffer;
+import com.example.retrogamer.model.User;
+import com.example.retrogamer.repository.CategoryRepository;
+import com.example.retrogamer.repository.MarketplaceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public class MarketPlaceController {
@@ -16,112 +22,75 @@ public class MarketPlaceController {
     @RequestMapping("/api/marketplace")
     public class MarketplaceController {
 
-        private final EntityManager entityManager;
+        private MarketplaceRepository marketplaceRepository;
+        private CategoryRepository categoryRepository;
 
-        @Autowired
-        public MarketplaceController(EntityManager entityManager) {
-            this.entityManager = entityManager;
-        }
-
-        // Marketplace Listing Endpoints
-
-        @GetMapping("/listings/{listingId}")
-        public ResponseEntity<MarketplaceListing> getListingById(@PathVariable Long listingId) {
-            MarketplaceListing listing = entityManager.find(MarketplaceListing.class, listingId);
-            if (listing == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(listing);
+        public MarketplaceController(MarketplaceRepository marketplaceRepository, CategoryRepository categoryRepository) {
+            this.marketplaceRepository = marketplaceRepository;
+            this.categoryRepository = categoryRepository;
         }
 
         @GetMapping("/listings")
-        public List<MarketplaceListing> getAllListings() {
-            TypedQuery<MarketplaceListing> query = entityManager.createQuery("SELECT l FROM MarketplaceListing l", MarketplaceListing.class);
-            return query.getResultList();
+        public List<MarketplaceListing> getListings() {
+            return marketplaceRepository.findAll();
         }
 
-        @PostMapping("/listings")
-        public ResponseEntity<MarketplaceListing> createListing(@RequestBody MarketplaceListing listing) {
-            entityManager.persist(listing);
-            return ResponseEntity.ok(listing);
+        @GetMapping("/categories")
+        public ResponseEntity<?> getCategories() {
+            return ResponseEntity.ok(categoryRepository.findAll());
         }
 
-        @PutMapping("/listings/{listingId}")
-        public ResponseEntity<MarketplaceListing> updateListing(@PathVariable Long listingId, @RequestBody MarketplaceListing updatedListing) {
-            MarketplaceListing existingListing = entityManager.find(MarketplaceListing.class, listingId);
-            if (existingListing == null) {
-                return ResponseEntity.notFound().build();
+        @PostMapping("/create")
+        public ResponseEntity<?> createListing(
+                @RequestParam String title,
+                @RequestParam String description,
+                @RequestParam Long categoryId,
+                @RequestParam Double price,
+                @RequestParam(required = false) MultipartFile image,
+                HttpSession session) throws IOException {
+
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                return ResponseEntity.status(401).body("User not logged in.");
             }
 
-            existingListing.setTitle(updatedListing.getTitle());
-            existingListing.setDescription(updatedListing.getDescription());
-            existingListing.setPrice(updatedListing.getPrice());
-            existingListing.setImage(updatedListing.getImage());
-            existingListing.setCategory(updatedListing.getCategory());
+            MarketplaceListing listing = new MarketplaceListing();
+            listing.setTitle(title);
+            listing.setDescription(description);
+            listing.setPrice(price);
+            listing.setUser(user);
 
-            entityManager.merge(existingListing);
-            return ResponseEntity.ok(existingListing);
-        }
+            Category category = categoryRepository.findById(categoryId).orElse(null);
+            listing.setCategory(category);
 
-        @DeleteMapping("/listings/{listingId}")
-        public ResponseEntity<Void> deleteListing(@PathVariable Long listingId) {
-            MarketplaceListing existingListing = entityManager.find(MarketplaceListing.class, listingId);
-            if (existingListing == null) {
-                return ResponseEntity.notFound().build();
+            if (image != null && !image.isEmpty()) {
+                listing.setImage(image.getBytes());
             }
 
-            entityManager.remove(existingListing);
-            return ResponseEntity.noContent().build();
+            marketplaceRepository.save(listing);
+            return ResponseEntity.ok("Listing created.");
         }
 
-        // Marketplace Offer Endpoints
-
-        @GetMapping("/offers/{offerId}")
-        public ResponseEntity<MarketplaceOffer> getOfferById(@PathVariable Integer offerId) {
-            MarketplaceOffer offer = entityManager.find(MarketplaceOffer.class, offerId);
-            if (offer == null) {
-                return ResponseEntity.notFound().build();
-            }
-            return ResponseEntity.ok(offer);
-        }
-
-        @GetMapping("/offers")
-        public List<MarketplaceOffer> getAllOffers() {
-            TypedQuery<MarketplaceOffer> query = entityManager.createQuery("SELECT o FROM MarketplaceOffer o", MarketplaceOffer.class);
-            return query.getResultList();
-        }
-
-        @PostMapping("/offers")
-        public ResponseEntity<MarketplaceOffer> createOffer(@RequestBody MarketplaceOffer offer) {
-            entityManager.persist(offer);
-            return ResponseEntity.ok(offer);
-        }
-
-        @PutMapping("/offers/{offerId}")
-        public ResponseEntity<MarketplaceOffer> updateOffer(@PathVariable Integer offerId, @RequestBody MarketplaceOffer updatedOffer) {
-            MarketplaceOffer existingOffer = entityManager.find(MarketplaceOffer.class, offerId);
-            if (existingOffer == null) {
-                return ResponseEntity.notFound().build();
+        @PostMapping("/delete")
+        public ResponseEntity<?> deleteListing(
+                @RequestParam Long id,
+                HttpSession session) {
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                return ResponseEntity.status(401).body("User not logged in.");
             }
 
-            existingOffer.setOfferPrice(updatedOffer.getOfferPrice());
-            existingOffer.setStatus(updatedOffer.getStatus());
-
-            entityManager.merge(existingOffer);
-            return ResponseEntity.ok(existingOffer);
-        }
-
-        @DeleteMapping("/offers/{offerId}")
-        public ResponseEntity<Void> deleteOffer(@PathVariable Integer offerId) {
-            MarketplaceOffer existingOffer = entityManager.find(MarketplaceOffer.class, offerId);
-            if (existingOffer == null) {
-                return ResponseEntity.notFound().build();
+            MarketplaceListing listing = marketplaceRepository.findById(id).orElse(null);
+            if (listing == null) {
+                return ResponseEntity.status(404).body("Listing not found.");
             }
 
-            entityManager.remove(existingOffer);
-            return ResponseEntity.noContent().build();
+            if (!listing.getUser().getUserId().equals(user.getUserId())) {
+                return ResponseEntity.status(403).body("User does not own this listing.");
+            }
+
+            marketplaceRepository.delete(listing);
+            return ResponseEntity.ok("Listing deleted.");
         }
     }
-
-
 }
