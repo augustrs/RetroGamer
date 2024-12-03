@@ -31,6 +31,15 @@ import java.util.List;
             return marketplaceRepository.findAll();
         }
 
+        @GetMapping("/listing/{id}")
+        public ResponseEntity<?> getListingById(@PathVariable Long id) {
+            MarketplaceListing listing = marketplaceRepository.findById(id).orElse(null);
+            if (listing == null) {
+                return ResponseEntity.status(404).body("Listing not found.");
+            }
+            return ResponseEntity.ok(listing);
+        }
+
         @GetMapping("/categories")
         public ResponseEntity<?> getCategories() {
             return ResponseEntity.ok(categoryRepository.findAll());
@@ -67,7 +76,7 @@ import java.util.List;
             return ResponseEntity.ok("Listing created.");
         }
 
-        @GetMapping("/post/{id}/image")
+        @GetMapping("/listing/{id}/image")
         public ResponseEntity<?> getListingImage(@PathVariable Long id) {
             MarketplaceListing listing = marketplaceRepository.findById(id).orElse(null);
             if (listing == null || listing.getImage() == null) {
@@ -77,8 +86,6 @@ import java.util.List;
                     .contentType(MediaType.IMAGE_JPEG)
                     .body(listing.getImage());
         }
-
-
 
         @PostMapping("/delete")
         public ResponseEntity<?> deleteListing(
@@ -101,4 +108,5 @@ import java.util.List;
             marketplaceRepository.delete(listing);
             return ResponseEntity.ok("Listing deleted.");
         }
+
     }

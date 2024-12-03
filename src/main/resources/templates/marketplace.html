@@ -12,61 +12,122 @@
 <div id="app" class="p-8">
     <h1 class="text-3xl font-bold mb-4">Marketplace Listings</h1>
 
-    <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="Search listings..."
-            class="border border-gray-300 rounded-md p-2 mb-4 w-full"
-    />
+    <!-- Display selected post -->
+    <div v-if="selectedListing">
+        <button @click="goBack" class="bg-gray-500 text-white px-4 py-2 rounded mb-4">
+            Back to listings
+        </button>
+        <h2 class="text-2xl font-bold mb-2">{{ selectedListing.title }}</h2>
+        <p class="text-gray-600 mb-4">{{ selectedListing.content }}</p>
+        <img
+                v-if="selectedListing.image"
+                :src="`/api/forum/post/${selectedListing.listId}/image`"
+                class="max-w-full h-auto rounded mb-4"
+                alt="Listing Image"
+        />
+        <p class="text-sm text-gray-500">
+            Posted by {{ selectedListing.user.username }}
+            in {{ selectedListing.category.name }}
+            on {{ formatDate(selectedListing.createdAt) }}
+        </p>
 
-    <div class="mb-4">
-        <label class="block font-medium mb-2">Filter by Category:</label>
-        <select v-model="selectedCategory" class="border border-gray-300 rounded-md p-2">
-            <option value="">All</option>
-            <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
-                {{ category.name }}
-            </option>
-        </select>
-    </div>
-
-    <div class="mb-4">
-        <a href="/marketplace/createListing" class="bg-green-500 text-white px-4 py-2 rounded inline-block">
-            Create New Listing
-        </a>
-    </div>
-
-    <div v-if="listings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="listing in filteredListings" :key="listing.listingId" class="border border-gray-300 rounded-md p-4">
-            <h2 class="text-xl font-bold">{{ listing.title }}</h2>
-            <p class="text-gray-600">{{ listing.description }}</p>
-
-            <img
-                    v-if="listing.image != null"
-                    :src="`/api/marketplace/post/${listing.listingId}/image`"
-                    class="max-w-full h-auto my-2 rounded"
-                    alt="Listing image"
-                    @error="handleImageError"
-            />
-
-            <p class="text-xl font-bold text-green-600 mt-2">${{ listing.price }}</p>
-
-            <p class="text-sm text-gray-500 mt-2">
-                Listed by {{ listing.user.username }}
-                in {{ listing.category.name }}
-                on {{ formatDate(listing.createdAt) }}
-            </p>
-
-            <div class="mt-3" v-if="isOwner(listing)">
-                <button
-                        @click="deleteListing(listing.listingId)"
-                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-                >
-                    Delete Listing
-                </button>
+        <!-- Comments Section -->
+        <div v-if="selectedListing.comments && selectedListing.comments.length > 0" class="mt-6">
+            <h3 class="text-xl font-bold">Comments</h3>
+            <div v-for="comment in selectedListing.comments" :key="comment.commentId" class="border-t pt-4 mt-4">
+                <p class="text-sm text-gray-600">{{ comment.content }}</p>
+                <!-- Display the username of the commenter -->
+                <p class="text-xs text-gray-500">
+                    Commented by {{ comment.user.username }} on {{ formatDate(comment.createdAt) }}
+                </p>
             </div>
         </div>
+
+        <!-- Comment Form -->
+        <div class="mt-6">
+            <h3 class="text-xl font-bold">Add a Comment</h3>
+            <form @submit.prevent="submitComment">
+                <textarea
+                        v-model="newCommentContent"
+                        class="border border-gray-300 p-2 w-full rounded mb-4"
+                        placeholder="Write your comment..."
+                        required
+                ></textarea>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Submit Comment
+                </button>
+            </form>
+        </div>
     </div>
-    <p v-else class="text-gray-500">No listings found.</p>
+
+    <!-- Display all listings -->
+    <div v-else>
+        <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search posts..."
+                class="border border-gray-300 rounded-md p-2 mb-4 w-full"
+        />
+
+        <div class="mb-4">
+            <label class="block font-medium mb-2">Filter by Category:</label>
+            <select v-model="selectedCategory" class="border border-gray-300 rounded-md p-2">
+                <option value="">All</option>
+                <option v-for="category in categories" :key="category.categoryId" :value="category.categoryId">
+                    {{ category.name }}
+                </option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <a href="/marketplace/createListing" class="bg-green-500 text-white px-4 py-2 rounded inline-block">
+                Create New Listing
+            </a>
+        </div>
+
+        <div v-if="listings.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="listing in filteredListings" :key="listing.listingId" class="border border-gray-300 rounded-md p-4">
+                <h2 class="text-xl font-bold">{{ listing.title }}</h2>
+                <p class="text-gray-600">{{ listing.description }}</p>
+
+                <img
+                        v-if="listing.image != null"
+                        :src="`/api/marketplace/post/${listing.listingId}/image`"
+                        class="max-w-full h-auto my-2 rounded"
+                        alt="Listing image"
+                        @error="handleImageError"
+                />
+
+                <p class="text-xl font-bold text-green-600 mt-2">${{ listing.price }}</p>
+
+                <p class="text-sm text-gray-500 mt-2">
+                    Listed by {{ listing.user.username }}
+                    in {{ listing.category.name }}
+                    on {{ formatDate(listing.createdAt) }}
+                </p>
+
+                <div class="mt-4">
+                    <button
+                            @click="viewListing(listing.listingId)"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    >
+                        View Post
+                    </button>
+                </div>
+
+                <div class="mt-3" v-if="isOwner(listing)">
+                    <button
+                            @click="deleteListing(listing.listingId)"
+                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    >
+                        Delete Listing
+                    </button>
+                </div>
+            </div>
+        </div>
+        <p v-else class="text-gray-500">No listings found.</p>
+    </div>
+
 </div>
 
 <script>
@@ -76,7 +137,10 @@
                 listings: [],
                 categories: [],
                 searchQuery: '',
-                selectedCategory: ''
+                selectedCategory: '',
+                selectedListing: null,
+                newCommentContent: '',
+                currentUser: null
             };
         },
         computed: {
@@ -101,6 +165,14 @@
             }
         },
         methods: {
+            async fetchCurrentUser() {
+                try {
+                    const response = await axios.get('/api/users/current');
+                    this.currentUser = response.data;
+                } catch (error) {
+                    console.error('Failed to fetch current user:', error)
+                }
+            },
             async fetchListings() {
                 try {
                     const response = await axios.get('/api/marketplace/listings');
@@ -118,6 +190,59 @@
                     console.log('Fetched categories:', this.categories);
                 } catch (error) {
                     console.error('Failed to fetch categories:', error);
+                }
+            },
+            async fetchListingWithComments(listingId) {
+                try {
+                    // Fetch the post details
+                    const listingResponse = await axios.get(`/api/marketplace/listing/${listingId}`);
+                    this.selectedListing = listingResponse.data;
+
+                    // Fetch the comments for this post
+                    const commentsResponse = await axios.get(`/api/marketplacecomment/${listingId}`);
+                    // Ensure each comment has the user information
+                    this.selectedListing.comments = commentsResponse.data.map(comment => {
+                        return {
+                            ...comment,
+                            user: comment.user // Make sure the user is included in the comment object
+                        };
+                    });
+                } catch (error) {
+                    console.error('Failed to load post and comments:', error);
+                }
+            },
+            async viewListing(listingId) {
+                this.fetchListingWithComments(listingId);
+            },
+            goBack() {
+                this.selectedListing = null;
+                this.newCommentContent = '';
+            },
+            async submitComment() {
+                if (this.newCommentContent.trim() === '') return;
+
+                if (!this.currentUser) {
+                    console.error('No user is logged in');
+                    return;
+                }
+
+                const newComment = {
+                    content: this.newCommentContent,
+                    user: { userId: this.currentUser.userId },
+                    listing: { listingId: this.selectedListing.listingId }
+                };
+
+                try {
+                    const response = await axios.post('/api/marketplacecomment/create', newComment);
+
+                    // Add the comment to the list of comments directly, including the user information
+                    this.selectedListing.comments.push({
+                        ...response.data,
+                        user: { username: this.currentUser.username }
+                    });
+                    this.newCommentContent = ''; // Clear the textarea after submission
+                } catch (error) {
+                    console.error('Failed to submit comment:', error);
                 }
             },
             handleImageError(event) {
@@ -165,6 +290,7 @@
             console.log('Component mounted');
             this.fetchListings();
             this.fetchCategories();
+            this.fetchCurrentUser();
         }
     });
 

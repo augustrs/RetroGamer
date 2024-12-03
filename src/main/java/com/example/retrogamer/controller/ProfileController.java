@@ -2,6 +2,7 @@ package com.example.retrogamer.controller;
 
 import com.example.retrogamer.model.User;
 import com.example.retrogamer.repository.UserRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +13,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping ("/api/users/")
 public class ProfileController {
+
     private final UserRepository userRepository;
 
-
-
-    @Autowired
     public ProfileController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -26,6 +25,14 @@ public class ProfileController {
         return userRepository.findById(userId).orElse(null);
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<User> getCurrentUser(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+
+        return userRepository.findByUserId(user.getUserId())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping ("/username/{username}")
     public User getUserByUsername(@PathVariable String username) {
