@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface ForumPostRepository extends JpaRepository<ForumPost,Long> {
     Optional<ForumPost> findByPostId(Long postId);
 
+
 }
