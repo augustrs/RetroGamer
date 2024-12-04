@@ -13,11 +13,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping ("/api/users/")
 public class ProfileController {
+
     private final UserRepository userRepository;
 
-
-
-    @Autowired
     public ProfileController(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -30,7 +28,6 @@ public class ProfileController {
     @GetMapping("/current")
     public ResponseEntity<User> getCurrentUser(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
         return userRepository.findById(user.getUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

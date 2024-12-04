@@ -25,5 +25,55 @@ public class MarketplaceOffer {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Getters and setters
-}
 
+    public Integer getOfferId() {
+        return offerId;
+    }
+    @Column(nullable = false)
+    private String status; // Hvis status er en String (eller en anden type)
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
+    public void setOfferId(Integer offerId) {
+        this.offerId = offerId;
+    }
+
+    public MarketplaceListing getListing() {
+        return listing;
+    }
+
+    public void setListing(MarketplaceListing listing) {
+        this.listing = listing;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Double getOfferPrice() {
+        return offerPrice;
+    }
+
+    public void setOfferPrice(Double offerPrice) {
+        this.offerPrice = offerPrice;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+}

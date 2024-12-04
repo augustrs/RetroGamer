@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Marketplace Listing</title>
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body>
+<div id="app" class="p-8">
+    <h1 class="text-3xl font-bold mb-4">Create New Listing</h1>
+
+    <form @submit.prevent="createListing" class="space-y-4">
+        <div>
+            <label for="title" class="block text-lg">Title:</label>
+            <input
+                    id="title"
+                    v-model="title"
+                    type="text"
+                    class="border border-gray-300 rounded-md p-2 w-full"
+                    placeholder="Enter listing title"
+                    required
+            />
+        </div>
+
+        <div>
+            <label for="description" class="block text-lg">Description:</label>
+            <textarea
+                    id="description"
+                    v-model="description"
+                    class="border border-gray-300 rounded-md p-2 w-full"
+                    placeholder="Enter listing description"
+                    required
+            ></textarea>
+        </div>
+
+        <div>
+            <label for="price" class="block text-lg">Price:</label>
+            <input
+                    id="price"
+                    v-model="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="border border-gray-300 rounded-md p-2 w-full"
+                    placeholder="Enter price"
+                    required
+            />
+        </div>
+
+        <div>
+            <label for="category" class="block text-lg">Category:</label>
+            <select
+                    v-model="selectedCategory"
+                    id="category"
+                    class="border border-gray-300 rounded-md p-2 w-full"
+                    required
+            >
+                <option v-for="category in categories" :value="category.categoryId" :key="category.categoryId">
+                    {{ category.name }}
+                </option>
+            </select>
+        </div>
+
+        <div>
+            <label for="image" class="block text-lg">Upload Image (optional):</label>
+            <input
+                    type="file"
+                    id="image"
+                    @change="handleImageUpload"
+                    class="border border-gray-300 rounded-md p-2 w-full"
+            />
+        </div>
+
+        <div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+                Create Listing
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                title: '',
+                description: '',
+                price: '',
+                selectedCategory: '',
+                categories: [],
+                image: null
+            };
+        },
+        methods: {
+            async fetchCategories() {
+                try {
+                    const response = await axios.get('/api/marketplace/categories');
+                    this.categories = response.data;
+                    console.log('Fetched Categories:', this.categories);
+                } catch (error) {
+                    console.error('Error fetching categories:', error);
+                }
+            },
+            handleImageUpload(event) {
+                this.image = event.target.files[0];
+            },
+            async createListing() {
+                console.log('Selected Category:', this.selectedCategory);
+                if (!this.selectedCategory) {
+                    alert('Please select a category.');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('title', this.title);
+                formData.append('description', this.description);
+                formData.append('price', this.price);
+                formData.append('categoryId', this.selectedCategory);
+                if (this.image) {
+                    formData.append('image', this.image);
+                }
+
+                try {
+                    const response = await axios.post('/api/marketplace/create', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    alert('Listing created successfully!');
+                    window.location.href = '/marketplace/listings';
+                } catch (error) {
+                    console.error('Error creating listing:', error);
+                    alert('Error creating listing. Please try again.');
+                }
+            }
+        },
+        mounted() {
+            this.fetchCategories();
+        }
+    });
+
+    app.mount('#app');
+</script>
+</body>
+</html>
