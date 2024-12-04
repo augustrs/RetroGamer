@@ -28,8 +28,7 @@ public class ProfileController {
     @GetMapping("/current")
     public ResponseEntity<User> getCurrentUser(HttpSession session) {
         User user = (User) session.getAttribute("user");
-
-        return userRepository.findByUserId(user.getUserId())
+        return userRepository.findById(user.getUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
