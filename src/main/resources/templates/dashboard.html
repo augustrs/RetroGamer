@@ -5,17 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM1VHjC67pKXHjE/FgaiEk8i4V9NYXmjglj8Vw" crossorigin="anonymous">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        .retro-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        body {
+            background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/fs/9bc27292880429.5e569ff84e4d0.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
-<div class="text-center">
-    <h1 class="text-4xl font-bold mb-4">Welcome to the Dashboard!</h1>
-    <p class="text-lg text-gray-300">You are now logged in.</p>
-    <a href="/logout"
-       class="mt-6 inline-block bg-pink-500 text-black font-bold py-2 px-4 rounded hover:bg-pink-600 transition">
-        Logout
-    </a>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
 
+<!-- Navigation Bar -->
+<nav class="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 shadow-lg w-full">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <!-- Logo with Retro Font -->
+        <a href="#" class="text-2xl retro-font text-pink-500 hover:text-pink-400 transition">
+            MyDashboard
+        </a>
 
-</div>
+        <!-- Navigation Links -->
+        <ul class="flex-grow flex justify-center space-x-16">
+            <li><a href="/dashboard" class="text-gray-300 hover:text-pink-400 transition">Home</a></li>
+            <li><a href="/forum" class="text-gray-300 hover:text-pink-400 transition">Forum</a></li>
+            <li><a href="/marketplace/listings" class="text-gray-300 hover:text-pink-400 transition">Marketplace</a></li>
+            <li><a href="/profile" class="text-gray-300 hover:text-pink-400 transition">Profile</a></li>
+        </ul>
+
+        <!-- Sign Out -->
+        <a href="/signout"
+           class="text-gray-300 bg-pink-500 hover:bg-pink-600 text-black font-bold py-2 px-4 rounded transition">
+            Sign out
+        </a>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="text-4xl font-bold mb-4">Welcome to the Dashboard!</h1>
+        <p class="text-lg text-gray-300">You are now logged in.</p>
+    </div>
+</main>
+
 </body>
 </html>
