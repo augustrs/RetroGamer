@@ -2,7 +2,6 @@ package com.example.retrogamer.controller;
 
 import com.example.retrogamer.model.ForumComment;
 import com.example.retrogamer.repository.ForumCommentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,11 +9,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comment")
-public class CommentController {
+public class ForumCommentController {
 
     private final ForumCommentRepository forumCommentRepository;
 
-    public CommentController(ForumCommentRepository forumCommentRepository) {
+    public ForumCommentController(ForumCommentRepository forumCommentRepository) {
         this.forumCommentRepository = forumCommentRepository;
     }
 

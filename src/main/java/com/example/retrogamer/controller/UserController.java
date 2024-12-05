@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class UserController {
 
-    UserRepository userRepository;
-    ProfileController profileController;
+    private final UserRepository userRepository;
+    private final ProfileController profileController;
 
-    @Autowired
     public UserController(UserRepository userRepository, ProfileController profileController) {
         this.userRepository = userRepository;
         this.profileController = profileController;
