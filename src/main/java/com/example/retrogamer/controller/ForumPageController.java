@@ -19,7 +19,10 @@ public class ForumPageController {
     }
 
     @GetMapping
-    public String forumPage() {
+    public String forumPage(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
         return "forum";
     }
 }

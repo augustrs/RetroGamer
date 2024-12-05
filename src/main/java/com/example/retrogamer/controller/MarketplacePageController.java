@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class MarketplacePageController {
 
     @GetMapping("/listings")
-    public String marketplacePage() {
+    public String marketplacePage(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
         return "marketplace";
     }
 
