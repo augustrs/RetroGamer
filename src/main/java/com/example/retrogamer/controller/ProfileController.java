@@ -106,6 +106,17 @@ public class ProfileController {
                 .header("Content-Type", "image/jpeg")
                 .body(imageBytes);
     }
+    @PostMapping("/{userId}/update-bio")
+    public ResponseEntity<User> updateBio(@PathVariable Long userId, @RequestBody String bio) {
+        return userRepository.findById(userId)
+                .map(user -> {
+                    user.setBio(bio);
+                    userRepository.save(user);
+                    return ResponseEntity.ok(user);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
 
 
