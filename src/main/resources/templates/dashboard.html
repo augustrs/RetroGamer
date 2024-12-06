@@ -9,55 +9,235 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM1VHjC67pKXHjE/FgaiEk8i4V9NYXmjglj8Vw" crossorigin="anonymous">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        .retro-font {
-            font-family: 'Press Start 2P', cursive;
-        }
+
         body {
             background-image: url('https://mir-s3-cdn-cf.behance.net/project_modules/fs/9bc27292880429.5e569ff84e4d0.gif');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .bg-dark {
+            background-color: #1a1a1a;
+        }
+
+        .text-light {
+            color: #ffffff;
+        }
+
+        .full-height {
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            flex-direction: column;
         }
+
+        .nav-bar {
+            background: linear-gradient(to right, #2c2c2c, #1f1f1f);
+            padding: 1rem 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-family: 'Press Start 2P', cursive;
+            color: #ff69b4;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex: 1;
+            gap: 2rem;
+        }
+
+        .flex-between {
+            justify-content: left;
+        }
+
+        .link {
+            color: #cccccc;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .link:hover {
+            color: #ff69b4;
+        }
+
+        .btn-accent {
+            background-color: #ff69b4;
+            color: #000000;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            justify-content: right;
+        }
+
+        .btn-accent:hover {
+            background-color: #ff1493;
+        }
+
+        .main-center {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #bbbbbb;
+        }
+
+        .footer {
+            background: linear-gradient(to right, #2c2c2c, #1f1f1f);
+            color: #cccccc;
+            padding: 1.5rem 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+        }
+
+        .footer-left {
+            flex: 1;
+            text-align: left;
+            justify-content: left;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            flex: 1;
+            gap: 1.5rem;
+        }
+
+        .footer-link {
+            color: #cccccc;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: #ff69b4;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: right;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .social-icon {
+            color: #cccccc;
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .social-icon:hover {
+            color: #ff69b4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body class="bg-dark text-light full-height flex-column">
 
 <!-- Navigation Bar -->
-<nav class="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 shadow-lg w-full">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-        <!-- Logo with Retro Font -->
-        <a href="#" class="text-2xl retro-font text-pink-500 hover:text-pink-400 transition">
-            MyDashboard
+<nav class="nav-bar shadow">
+    <div class="container flex-between">
+        <!-- Left Section -->
+        <a href="/dashboard" class="logo text-accent">
+            RetroGamer
         </a>
 
-        <!-- Navigation Links -->
-        <ul class="flex-grow flex justify-center space-x-16">
-            <li><a href="/dashboard" class="text-gray-300 hover:text-pink-400 transition">Home</a></li>
-            <li><a href="/forum" class="text-gray-300 hover:text-pink-400 transition">Forum</a></li>
-            <li><a href="/marketplace/listings" class="text-gray-300 hover:text-pink-400 transition">Marketplace</a></li>
-            <li><a href="/profile" class="text-gray-300 hover:text-pink-400 transition">Profile</a></li>
+        <!-- Middle Section -->
+        <ul class="nav-links hidden-md flex-row">
+            <li><a href="/dashboard" class="link">Home</a></li>
+            <li><a href="/forum" class="link">Forum</a></li>
+            <li><a href="/marketplace/listings" class="link">Marketplace</a></li>
+            <li><a href="/profile" class="link">Profile</a></li>
         </ul>
 
-        <!-- Sign Out -->
-        <a href="/signout"
-           class="text-gray-300 bg-pink-500 hover:bg-pink-600 text-black font-bold py-2 px-4 rounded transition">
+        <!-- Right Section -->
+        <a href="/signout" class="btn-accent">
             Sign out
         </a>
     </div>
 </nav>
 
 <!-- Main Content -->
-<main class="flex-grow flex items-center justify-center">
+<main class="main-center">
     <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4">Welcome to the Dashboard!</h1>
-        <p class="text-lg text-gray-300">You are now logged in.</p>
+        <h1 class="title">Welcome to the Dashboard!</h1>
+        <p class="subtitle">You are now logged in.</p>
     </div>
 </main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container flex-between">
+        <!-- Left Section -->
+        <div class="footer-left">
+            <p>&copy; 2024 RetroGamer. All Rights Reserved.</p>
+        </div>
+
+        <!-- Center Section -->
+        <div class="footer-links">
+            <a href="/privacy" class="footer-link">Privacy Policy</a>
+            <a href="/terms" class="footer-link">Terms of Service</a>
+            <a href="/contact" class="footer-link">Contact</a>
+        </div>
+
+        <!-- Right Section -->
+        <div class="social-links">
+            <a href="https://linkedin.com" target="_blank" class="social-icon">
+                <i class="fa-brands fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/augustrs/retrogamer" target="_blank" class="social-icon">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+    </div>
+</footer>
 
 </body>
 </html>
