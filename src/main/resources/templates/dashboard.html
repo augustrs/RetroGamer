@@ -6,7 +6,7 @@
     <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM1VHjC67pKXHjE/FgaiEk8i4V9NYXmjglj8Vw" crossorigin="anonymous">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -57,13 +57,10 @@
         .nav-links {
             list-style: none;
             display: flex;
-            justify-content: center;
-            flex: 1;
             gap: 2rem;
-        }
-
-        .flex-between {
-            justify-content: left;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
         }
 
         .link {
@@ -84,7 +81,6 @@
             border-radius: 0.25rem;
             text-decoration: none;
             transition: background-color 0.2s;
-            justify-content: right;
         }
 
         .btn-accent:hover {
@@ -126,15 +122,13 @@
         .footer-left {
             flex: 1;
             text-align: left;
-            justify-content: left;
         }
 
         .footer-links {
             display: flex;
             justify-content: center;
-            text-align: center;
-            flex: 1;
             gap: 1.5rem;
+            flex: 1;
         }
 
         .footer-link {
@@ -149,9 +143,9 @@
 
         .social-links {
             display: flex;
-            justify-content: right;
             gap: 1rem;
             flex: 1;
+            justify-content: flex-end;
         }
 
         .social-icon {
@@ -167,8 +161,10 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
             width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         @media (max-width: 768px) {
@@ -183,14 +179,14 @@
 
 <!-- Navigation Bar -->
 <nav class="nav-bar shadow">
-    <div class="container flex-between">
+    <div class="container">
         <!-- Left Section -->
         <a href="/dashboard" class="logo text-accent">
             RetroGamer
         </a>
 
         <!-- Middle Section -->
-        <ul class="nav-links hidden-md flex-row">
+        <ul class="nav-links">
             <li><a href="/dashboard" class="link">Home</a></li>
             <li><a href="/forum" class="link">Forum</a></li>
             <li><a href="/marketplace/listings" class="link">Marketplace</a></li>
@@ -214,7 +210,7 @@
 
 <!-- Footer -->
 <footer class="footer">
-    <div class="container flex-between">
+    <div class="container">
         <!-- Left Section -->
         <div class="footer-left">
             <p>&copy; 2024 RetroGamer. All Rights Reserved.</p>
