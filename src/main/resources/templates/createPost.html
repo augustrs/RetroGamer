@@ -67,6 +67,8 @@
                 Create Post
             </button>
         </div>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="goBack()">Back to Post</button>
+
     </form>
 </div>
 
@@ -129,6 +131,10 @@
     });
 
     app.mount('#app');
+
+    function goBack() {
+        window.history.back();
+    }
 </script>
 </body>
 </html>
