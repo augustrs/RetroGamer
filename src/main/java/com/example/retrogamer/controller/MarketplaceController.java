@@ -19,9 +19,9 @@ import java.util.List;
     @RequestMapping("/api/marketplace")
     public class MarketplaceController {
 
-        private MarketplaceRepository marketplaceRepository;
-        private CategoryRepository categoryRepository;
-        private MarketplaceCommentRepository commentRepository;
+        private final MarketplaceRepository marketplaceRepository;
+        private final CategoryRepository categoryRepository;
+        private final MarketplaceCommentRepository commentRepository;
 
         public MarketplaceController(MarketplaceRepository marketplaceRepository, CategoryRepository categoryRepository, MarketplaceCommentRepository commentRepository) {
             this.marketplaceRepository = marketplaceRepository;
