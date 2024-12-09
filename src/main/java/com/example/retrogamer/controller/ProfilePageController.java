@@ -1,5 +1,6 @@
 package com.example.retrogamer.controller;
 
+import com.example.retrogamer.model.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,11 +12,13 @@ public class ProfilePageController {
 
     @GetMapping("/profile")
     public String profilePage(HttpSession session) {
-        if (session.getAttribute("user") == null) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
             return "redirect:/login";
         }
-        return "user";
+        return "redirect:/profile/" + user.getUserId();
     }
+
 
     @GetMapping("/profile/{userId}")
     public String profileWithId(HttpSession session) {

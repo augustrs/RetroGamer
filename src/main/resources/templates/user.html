@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         .retro-font {
@@ -16,148 +17,22 @@
             background-position: center;
             background-repeat: no-repeat;
             min-height: 100vh;
-            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ffffff;
-        }
-
-        .container {
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 16px; /* Removed pink border */
-            padding: 20px;
-            box-shadow: 0 0 20px #ff00ff;
-            width: 90%;
-            max-width: 500px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header .avatar {
-            margin: 0 auto 10px;
-            width: 100px;
-            height: 100px;
-            background-color: #222;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px #ff00ff; /* Retained pink glow */
-        }
-
-        .header h1 {
-            font-size: 18px;
-            margin: 0;
-            color: #ffffff;
-            text-shadow: 0 0 5px #ff00ff;
-        }
-
-        .bio {
-            margin: 20px 0;
-            font-size: 14px;
-            color: #ffddff;
-            padding: 10px;
-            background: #222;
-            border-radius: 8px;
-            border: 1px solid #444;
-        }
-
-        .form {
-            margin-top: 20px;
-        }
-
-        .form textarea {
-            width: 96%;
-            padding: 10px;
-            background: #333;
-            border: 1px solid #444; /* Neutral border */
-            color: #ffddff;
-            border-radius: 8px;
-            resize: none;
-            font-size: 12px;
-            font-family: 'Press Start 2P', cursive;
-            box-shadow: 0 0 10px #444;
-        }
-
-        .form button {
-            margin-top: 10px;
-            background: #ff00ff;
-            border: none;
-            padding: 10px 20px;
-            color: #ffffff;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px #ff00ff;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .form button:hover {
-            background: #ff33ff;
-            box-shadow: 0 0 15px #ff33ff;
-        }
-
-        .input-section input {
-            width: calc(100% - 20px);
-            padding: 10px;
-            background: #222;
-            border: 1px solid #444; /* Neutral border */
-            color: #ffddff;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: 'Press Start 2P', cursive;
-            box-shadow: 0 0 10px #444; /* Subtle glow */
-            margin-top: 10px;
-        }
-
-        .input-section button {
-            margin-top: 10px;
-            background: #ff00ff;
-            border: none;
-            padding: 10px;
-            color: white;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 10px #ff00ff;
-        }
-
-        .input-section button:hover {
-            background: #ff33ff;
-            box-shadow: 0 0 15px #ff33ff;
-        }
-
-        .avatar {
-            margin: 0 auto 10px;
-            width: 100px;
-            height: 100px;
             position: relative;
-            background-color: #222;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px #ff00ff;
         }
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            border-radius: 50%;
+        .overlay {
+            background: rgba(0, 0, 0, 0.75);
+            position: absolute;
+            inset: 0;
+            z-index: 1;
         }
-
-
     </style>
 </head>
 <body>
-<div id="app" class="container">
+<div class="overlay"></div>
+<div id="app" class="relative w-full max-w-lg bg-gray-800 text-white rounded-lg shadow-lg px-6 py-8 z-10">
     <profile-page></profile-page>
 </div>
 
@@ -173,7 +48,6 @@
                 newBio: '',
                 bioUpdateMessage: null,
                 showTextArea: false,
-                hovering: false,
             };
         },
         created() {
@@ -237,7 +111,7 @@
                         const updatedUser = await response.json();
                         this.user.bio = updatedUser.bio;
                         this.bioUpdateMessage = "Profile updated successfully!";
-                        this.showTextArea = false; // Hide the textarea after successful update
+                        this.showTextArea = false;
                         setTimeout(() => {
                             this.bioUpdateMessage = null;
                         }, 2000);
@@ -273,7 +147,7 @@
                         });
 
                         if (response.ok) {
-                            this.fetchProfilePicture(this.userIdFromUrl); // Refresh the profile picture
+                            this.fetchProfilePicture(this.userIdFromUrl);
                             alert('Profile picture updated successfully!');
                         } else {
                             alert('Failed to update profile picture.');
@@ -285,49 +159,69 @@
                 }
             },
         },
-
         template: `
           <div>
-            <div v-if="error" class="error">
+            <div v-if="error" class="mb-6 text-center text-red-500">
               <p>{{ error }}</p>
             </div>
 
             <div v-if="user">
-              <div class="header">
-                <div class="avatar">
+              <div class="text-center mb-6">
+                <div class="relative w-24 h-24 mx-auto rounded-full overflow-hidden bg-gray-700 border border-pink-500 shadow-lg">
                   <img v-if="profilePicture" :src="profilePicture" alt="Profile Picture" />
-                  <span v-else>{{ user.username.charAt(0).toUpperCase() }}</span>
+                  <span v-else class="text-3xl text-gray-400 flex justify-center items-center h-full">
+                    {{ user.username.charAt(0).toUpperCase() }}
+                  </span>
                 </div>
-                <h1>{{ user.username }}</h1>
+                <h1 class="mt-4 text-2xl retro-font text-pink-500">{{ user.username }}</h1>
               </div>
 
-              <div class="bio">
+              <div class="mb-6 p-4 bg-gray-700 rounded-md shadow-md">
                 <p><strong>Email:</strong> {{ user.email }}</p>
                 <p><strong>Bio:</strong> {{ user.bio }}</p>
               </div>
 
-              <div class="form">
-                <button v-if="!showTextArea" @click="toggleTextArea">Edit Bio</button>
-                <div v-else>
-                  <textarea v-model="newBio" rows="4" placeholder="Update your bio here"></textarea>
-                  <button @click="updateProfile">Save Bio</button>
-                  <button @click="toggleTextArea">Cancel</button>
+              <div>
+                <button
+                        v-if="!showTextArea"
+                        @click="toggleTextArea"
+                        class="w-full bg-pink-500 text-black font-bold rounded-md px-4 py-2 transition transform hover:scale-105">
+                    Edit Bio
+                </button>
+                <div v-else class="mt-4">
+                  <textarea v-model="newBio" rows="4"
+                            class="w-full bg-gray-700 border border-gray-600 text-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                            placeholder="Update your bio here"></textarea>
+                  <div class="flex mt-4 space-x-4">
+                    <button @click="updateProfile"
+                            class="flex-1 bg-pink-500 text-black font-bold rounded-md px-4 py-2 transition transform hover:scale-105">
+                        Save Bio
+                    </button>
+                    <button @click="toggleTextArea"
+                            class="flex-1 bg-gray-500 text-black font-bold rounded-md px-4 py-2 transition transform hover:scale-105">
+                        Cancel
+                    </button>
+                  </div>
+                  <p v-if="bioUpdateMessage" class="text-green-400 mt-4">{{ bioUpdateMessage }}</p>
                 </div>
-                <p v-if="bioUpdateMessage">{{ bioUpdateMessage }}</p>
               </div>
 
-              <div class="form">
-                <!-- Add file upload input for profile picture -->
-                <input type="file" accept="image/*" @change="handleFileChange" />
-                <p>Upload a new profile picture</p>
+              <div class="mt-6">
+                <label class="block text-sm mb-2">Upload Profile Picture</label>
+                <input type="file" accept="image/*" @change="handleFileChange"
+                       class="w-full bg-gray-700 border border-gray-600 text-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-pink-500 focus:outline-none" />
               </div>
             </div>
 
-            <div v-else v-if="!userIdFromUrl" class="input-section">
-              <h1 class="retro-font text-center text-pink-500">User Profile</h1>
-              <p>Please enter a User ID:</p>
-              <input v-model="userIdInput" type="number" placeholder="Enter User ID">
-              <button @click="redirectToProfile">Go to Profile</button>
+            <div v-else v-if="!userIdFromUrl">
+              <h1 class="text-3xl retro-font text-center text-pink-500 mb-6">User Profile</h1>
+              <p class="text-center text-gray-400 mb-6">Please enter a User ID:</p>
+              <input v-model="userIdInput" type="number" placeholder="Enter User ID"
+                     class="w-full bg-gray-700 border border-gray-600 text-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-pink-500 focus:outline-none mb-4" />
+              <button @click="redirectToProfile"
+                      class="w-full bg-pink-500 text-black font-bold rounded-md px-4 py-2 transition transform hover:scale-105">
+                Go to Profile
+              </button>
             </div>
           </div>
         `,
