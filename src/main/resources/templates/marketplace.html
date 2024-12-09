@@ -138,7 +138,7 @@
 <div id="app" class="p-8">
     <h1 class="text-3xl font-bold mb-4">Marketplace Listings</h1>
 
-    <!-- Display selected listing -->
+    <!-- Display selected post -->
     <div v-if="selectedListing">
         <div class="flex items-center space-x-4 mb-4">
 
@@ -149,9 +149,9 @@
 
             <!-- Delete Listing Button -->
             <button
-                v-if="isOwner(selectedListing)"
-                @click="deleteListing(selectedListing.listingId)"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    v-if="isOwner(selectedListing)"
+                    @click="deleteListing(selectedListing.listingId)"
+                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
             >
                 Delete Listing
             </button>
@@ -187,34 +187,12 @@
         <div class="mt-6">
             <h3 class="text-xl font-bold">Add a Comment</h3>
             <form @submit.prevent="submitComment">
-                <!-- Comment Textarea -->
                 <textarea
                         v-model="newCommentContent"
                         class="border border-gray-300 p-2 w-full rounded mb-4"
                         placeholder="Write your comment..."
                         required
                 ></textarea>
-
-                <!-- Offer Section -->
-                <div class="flex items-center space-x-2 mb-4">
-                    <input
-                            v-model.number="offerAmount"
-                            type="number"
-                            placeholder="Enter your offer"
-                            class="border border-gray-300 p-2 w-32 rounded"
-                            :min="1"
-                            :max="10000"
-                            required
-                    />
-                    <button
-                            @click.prevent="addOfferToComment"
-                            class="bg-green-500 text-white px-4 py-2 rounded"
-                    >
-                        Add Offer
-                    </button>
-                </div>
-
-                <!-- Comment Submit Button -->
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
                     Submit Comment
                 </button>
@@ -302,18 +280,8 @@
                 selectedCategory: '',
                 selectedListing: null,
                 newCommentContent: '',
-                offerAmount: '',
                 currentUser: null
             };
-        },
-        watch: {
-            offerAmount(value) {
-                if (value > 10000) {
-                    this.offerAmount = 10000;
-                } else if (value < 1) {
-                    this.offerAmount = 1;
-                }
-            }
         },
         computed: {
             filteredListings() {
@@ -389,36 +357,6 @@
             goBack() {
                 this.selectedListing = null;
                 this.newCommentContent = '';
-                this.newOfferContent = '';
-            },
-            async addOfferToComment() {
-                if (isNaN(this.offerAmount) || this.offerAmount < 1 || this.offerAmount > 10000) {
-                    alert('Please enter a valid offer between 1 and 10,000.');
-                    return;
-                }
-
-                if (!this.currentUser) {
-                    alert('You need to be logged in to make an offer.');
-                    return;
-                }
-
-                const offerComment = {
-                    content: `Hello. I would like to offer $${this.offerAmount} for your listed item.`,
-                    user: { userId: this.currentUser.userId },
-                    listing: { listingId: this.selectedListing.listingId }
-                };
-
-                try {
-                    const response = await axios.post('/api/marketplacecomment/create', offerComment);
-                    this.selectedListing.comments.push({
-                        ...response.data,
-                        user: { username: this.currentUser.username }
-                    });
-                    this.offerAmount = ''; // Clear offer input
-                } catch (error) {
-                    console.error('Failed to submit offer as a comment:', error);
-                    alert('Failed to submit your offer. Please try again later.');
-                }
             },
             async submitComment() {
                 if (this.newCommentContent.trim() === '') return;
