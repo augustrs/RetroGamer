@@ -8,7 +8,106 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+
+        body {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        .full-height {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-bar {
+            background: linear-gradient(to right, #2c2c2c, #1f1f1f);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-family: 'Press Start 2P', cursive;
+            color: #ff69b4;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .link {
+            color: #cccccc;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .link:hover {
+            color: #ff69b4;
+        }
+
+        .btn-accent {
+            background-color: #ff69b4;
+            color: #000000;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: fit-content;
+        }
+
+        .btn-accent:hover {
+            background-color: #ff1493;
+        }
+
+        .container-navbar {
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .container-navbar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         .like-button {
             transition: all 0.3s ease;
             cursor: pointer;
@@ -56,14 +155,46 @@
         }
 
         @keyframes likeEffect {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
     </style>
 </head>
-<body>
+<body class=" text-light full-height flex-column">
+<!-- Navigation Bar -->
+<nav class="nav-bar shadow">
+    <div class="container-navbar">
+        <!-- Left Section -->
+        <a href="/dashboard" class="logo text-accent">
+            RetroGamer
+        </a>
+
+        <!-- Middle Section -->
+        <ul class="nav-links">
+            <li><a href="/dashboard" class="link">Home</a></li>
+            <li><a href="/forum" class="link">Forum</a></li>
+            <li><a href="/marketplace/listings" class="link">Marketplace</a></li>
+            <li><a href="/profile" class="link">Profile</a></li>
+        </ul>
+
+        <!-- Right Section -->
+        <div style="display:flex;justify-content: end">
+            <a href="/signout" class="btn-accent">
+                Sign out
+            </a>
+        </div>
+    </div>
+</nav>
 <div id="app" class="p-8">
+    <br>
+    <br>
     <h1 class="text-3xl font-bold mb-4">Forum Posts</h1>
 
     <!-- Display selected post -->
@@ -266,7 +397,7 @@
                     const postsResponse = await axios.get('/api/forum/posts');
                     this.posts = this.posts.map(post => {
                         const updatedPost = postsResponse.data.find(p => p.postId === post.postId);
-                        return updatedPost ? { ...post, likeCount: updatedPost.likeCount } : post;
+                        return updatedPost ? {...post, likeCount: updatedPost.likeCount} : post;
                     });
                 } catch (error) {
                     console.error('Failed to update like counts:', error);
@@ -343,7 +474,7 @@
 
                 try {
                     const response = await axios.post(`/api/forum/post/${postId}/like`);
-                    const { likeCount, isLiked } = response.data;
+                    const {likeCount, isLiked} = response.data;
 
                     // Update like state
                     if (isLiked) {
@@ -354,12 +485,12 @@
 
                     // Update posts array
                     this.posts = this.posts.map(post =>
-                        post.postId === postId ? { ...post, likeCount } : post
+                        post.postId === postId ? {...post, likeCount} : post
                     );
 
                     // Update selected post if it exists
                     if (this.selectedPost && this.selectedPost.postId === postId) {
-                        this.selectedPost = { ...this.selectedPost, likeCount };
+                        this.selectedPost = {...this.selectedPost, likeCount};
                     }
 
                     // Immediately after liking, fetch the latest user likes
