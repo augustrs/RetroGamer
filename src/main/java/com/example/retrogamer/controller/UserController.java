@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class UserController {
 
-    UserRepository userRepository;
-    ProfileController profileController;
+    private final UserRepository userRepository;
+    private final ProfileController profileController;
 
-    @Autowired
     public UserController(UserRepository userRepository, ProfileController profileController) {
         this.userRepository = userRepository;
         this.profileController = profileController;
@@ -69,6 +68,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public String signupPost(@ModelAttribute User user, Model model) {
+
         ResponseEntity<User> response = profileController.createUser(user);
         if (response.getStatusCode().is2xxSuccessful()) {
             model.addAttribute("Account created successfully. Please log in");
@@ -77,6 +77,13 @@ public class UserController {
             model.addAttribute("error, Please try agian.");
             return "signup";
         }
+    }
+
+    @GetMapping("/signout")
+    public String signout(HttpSession session, Model model) {
+        session.invalidate();
+        model.addAttribute("message", "You have been successfully signed out.");
+        return "redirect:/login";
     }
 
 }
