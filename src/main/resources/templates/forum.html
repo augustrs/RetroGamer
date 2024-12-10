@@ -520,19 +520,30 @@
             },
 
             async submitComment() {
-                if (!this.newCommentContent.trim()) return;
+                if (this.newCommentContent.trim() === '') return;
+
+                if (!this.currentUser) {
+                    console.error('No user is logged in');
+                    return;
+                }
+
+                const newComment = {
+                    content: this.newCommentContent,
+                    user: { userId: this.currentUser.userId },  // Replace with the actual logged-in user ID if needed
+                    post: { postId: this.selectedPost.postId }
+                };
 
                 try {
-                    const response = await axios.post('/api/comment/create', {
-                        content: this.newCommentContent,
-                        postId: this.selectedPost.postId
-                    });
+                    const response = await axios.post('/api/comment/create', newComment);
 
-                    this.selectedPost.comments.push(response.data);
-                    this.newCommentContent = '';
+                    // Add the comment to the list of comments directly, including the user information
+                    this.selectedPost.comments.push({
+                        ...response.data,
+                        user: { username: this.currentUser.username } // Manually add the logged-in user's name for this example
+                    });
+                    this.newCommentContent = ''; // Clear the textarea after submission
                 } catch (error) {
                     console.error('Failed to submit comment:', error);
-                    alert('Failed to submit comment. Please try again.');
                 }
             },
 
