@@ -5,7 +5,10 @@ import com.example.retrogamer.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -16,9 +19,7 @@ public class Initdata {
     @Bean
     CommandLineRunner initDataLoader(UserRepository userRepository,
                                      CategoryRepository categoryRepository,
-                                     ForumPostRepository forumPostRepository,
-                                     ForumLikeRepository forumLikeRepository,
-                                     ForumCommentRepository forumCommentRepository) {
+                                     ForumPostRepository forumPostRepository) {
         return args -> {
             // Create Users
             List<User> users = new ArrayList<>();
@@ -48,129 +49,67 @@ public class Initdata {
             List<Category> categories = List.of(xbox, nintendo, playstation, pc);
             categoryRepository.saveAll(categories);
 
-            // Create Forum Posts
+            // Create Forum Posts and Comments
             Random random = new Random();
-            for (Category category : categories) {
-                for (int i = 1; i <= 10; i++) {
+            String[] titles = {
+                    "Xbox Tips and Tricks", "Hidden Gems on Xbox", "Why Xbox Rules the Lounge", "Top Xbox Multiplayer Games", "Xbox Graphics Revolution",
+                    "Nintendo Classics Revisited", "Switch Hacks", "Legend of Zelda Insights", "Mario Kart Tips", "Pokemon Strategies",
+                    "PlayStation Exclusives", "PlayStation 5 Insights", "Best PlayStation Controllers", "PlayStation VR Updates", "Why PlayStation is King",
+                    "Top PC Games", "PC Gaming Setup Ideas", "Best PC RPGs", "Top FPS Games on PC", "Ultimate Modding Tips"
+            };
+
+            String[] contents = {
+                    "What are your favorite Xbox features?",
+                    "Exploring hidden gems on Xbox that everyone should try.",
+                    "Why do you think Xbox dominates the living room?",
+                    "Discuss your favorite multiplayer games on Xbox.",
+                    "Xbox has set a new standard in graphics. Agree?",
+                    "Let’s talk about the best Nintendo classics and why they matter today!",
+                    "Share your favorite Switch hacks and tips!",
+                    "What are your thoughts on the latest Zelda game?",
+                    "Let’s dive into Mario Kart strategies.",
+                    "Which Pokemon game do you think is the most strategic?",
+                    "Share your thoughts on the latest PlayStation exclusives.",
+                    "What do you love most about the PlayStation 5?",
+                    "Are third-party PlayStation controllers worth it?",
+                    "Discuss the latest updates in PlayStation VR technology.",
+                    "What makes PlayStation the top console for gamers?",
+                    "Discuss the top PC games to play in 2024!",
+                    "Let’s exchange ideas for ultimate PC gaming setups!",
+                    "What are your favorite PC RPG games?",
+                    "Which FPS game has the best mechanics on PC?",
+                    "Tips for modding games to enhance gameplay experience."
+            };
+
+            List<byte[]> images = List.of(
+                    loadImageBytes("post1.jpg"),
+                    loadImageBytes("post2.jpg"),
+                    loadImageBytes("post3.jpg")
+            );
+
+            for (int catIdx = 0; catIdx < categories.size(); catIdx++) {
+                Category category = categories.get(catIdx);
+                for (int i = 0; i < 5; i++) {
                     ForumPost post = new ForumPost();
-                    post.setTitle(generatePostTitle(category.getName(), i));
-                    post.setContent(generatePostContent(category.getName(), i));
+                    post.setTitle(titles[catIdx * 5 + i]);
+                    post.setContent(contents[catIdx * 5 + i]);
                     post.setUser(users.get(random.nextInt(users.size())));
                     post.setCategory(category);
-                    post.setLikeCount(random.nextInt(50)); // Random like count
+                    post.setLikeCount(random.nextInt(50));
+                    post.setImage(images.get(random.nextInt(images.size())));
+
                     forumPostRepository.save(post);
-
-                    // Optionally create random likes
-                    int likeCount = post.getLikeCount();
-                    for (int j = 0; j < likeCount; j++) {
-                        ForumLike like = new ForumLike();
-                        like.setPost(post);
-                        like.setUser(users.get(random.nextInt(users.size())));
-                        forumLikeRepository.save(like);
-                    }
-
-                    // Create Comments for Posts
-                    int commentCount = random.nextInt(5) + 1; // Random number of comments between 1 and 5
-                    for (int k = 0; k < commentCount; k++) {
-                        ForumComment comment = new ForumComment();
-                        comment.setPost(post);
-                        comment.setUser(users.get(random.nextInt(users.size())));
-                        comment.setContent(generateCommentContent(post.getTitle(), category.getName(), k));
-                        forumCommentRepository.save(comment);
-                    }
                 }
             }
         };
     }
 
-    private String generatePostTitle(String categoryName, int index) {
-        String[] xboxTitles = {
-                "The Best Halo Game Ever?", "Why Xbox Game Pass is a Game Changer", "Classic Xbox Exclusives You Must Play",
-                "Tips for Getting the Most Out of Your Xbox", "The Future of Xbox Gaming", "Favorite Multiplayer Games on Xbox",
-                "The Evolution of Xbox Consoles", "Underrated Xbox Titles Everyone Should Try", "Xbox vs. PlayStation: A Friendly Debate",
-                "Backwards Compatibility: Xbox Does It Right"
-        };
-        String[] nintendoTitles = {
-                "Top 10 Mario Games of All Time", "Why Zelda is a Masterpiece", "The Joy of Nintendo Switch Gaming",
-                "Tips for Catching 'Em All in Pokémon", "The Most Challenging Nintendo Bosses", "Favorite Party Games on Switch",
-                "Nintendo Nostalgia: SNES Classics", "Why Animal Crossing is So Relaxing", "The Legend of Metroid: A Retrospective",
-                "Indie Games on Nintendo Switch You Can't Miss"
-        };
-        String[] playstationTitles = {
-                "The Last of Us: Storytelling at Its Best", "Why PlayStation Exclusives Dominate", "The Best Graphics on PlayStation 5",
-                "Tips for Trophy Hunters", "The Evolution of PlayStation Controllers", "Underrated PS4 Gems",
-                "Why God of War is a Must-Play", "Top Horror Games on PlayStation", "Favorite JRPGs on PlayStation",
-                "PlayStation VR: Worth the Investment?"
-        };
-        String[] pcTitles = {
-                "Building Your First Gaming PC", "Why PC Gaming is Superior", "The Best RTS Games for PC",
-                "Tips for Optimizing Your Rig", "Top PC Mods That Enhance Gameplay", "The Most Addictive PC Strategy Games",
-                "Favorite FPS Games on PC", "The History of PC Gaming", "The Future of Graphics in PC Games",
-                "PC vs. Console: Which is Right for You?"
-        };
-
-        switch (categoryName) {
-            case "Xbox":
-                return xboxTitles[index - 1];
-            case "Nintendo":
-                return nintendoTitles[index - 1];
-            case "PlayStation":
-                return playstationTitles[index - 1];
-            case "PC":
-                return pcTitles[index - 1];
-            default:
-                return "General Gaming Discussion " + index;
-        }
-    }
-
-    private String generatePostContent(String categoryName, int index) {
-        return "Let's dive into the world of " + categoryName + " gaming! Share your thoughts, experiences, and tips on this topic. Discussion " + index;
-    }
-
-    private String generateCommentContent(String postTitle, String categoryName, int commentIndex) {
-        String[] xboxComments = {
-                "I totally agree, Halo defined a generation of gamers!",
-                "Game Pass has completely changed how I discover games. Love it!",
-                "Backwards compatibility is such a win for Xbox players!",
-                "I still remember playing the original Gears of War—amazing memories!",
-                "The new Fable game looks so promising, can't wait!"
-        };
-
-        String[] nintendoComments = {
-                "Mario Galaxy is my favorite, but Odyssey comes close!",
-                "Zelda Breath of the Wild redefined open-world games for me.",
-                "Switch is perfect for gaming on the go!",
-                "Animal Crossing got me through the pandemic. So relaxing!",
-                "The SNES era will always hold a special place in my heart."
-        };
-
-        String[] playstationComments = {
-                "The Last of Us Part II was so emotional, loved it.",
-                "God of War's combat is on another level!",
-                "I spent countless hours trophy hunting on PS4.",
-                "PlayStation VR is underrated for horror games!",
-                "Uncharted 4 had one of the best stories I've played."
-        };
-
-        String[] pcComments = {
-                "Building my first gaming PC was such a rewarding experience!",
-                "Mods like these really make Skyrim a whole new game.",
-                "I love the precision you get with mouse and keyboard for FPS games.",
-                "The strategy games on PC are unmatched. Total War is a favorite!",
-                "Upgrading my GPU made such a difference in performance."
-        };
-
-        switch (categoryName) {
-            case "Xbox":
-                return xboxComments[commentIndex % xboxComments.length];
-            case "Nintendo":
-                return nintendoComments[commentIndex % nintendoComments.length];
-            case "PlayStation":
-                return playstationComments[commentIndex % playstationComments.length];
-            case "PC":
-                return pcComments[commentIndex % pcComments.length];
-            default:
-                return "Great point about " + postTitle + ". I hadn't thought of it that way!";
+    private byte[] loadImageBytes(String fileName) {
+        try {
+            return Files.readAllBytes(new ClassPathResource("images/" + fileName).getFile().toPath());
+        } catch (IOException e) {
+            System.err.println("Error loading image " + fileName + ": " + e.getMessage());
+            return null;
         }
     }
 }
